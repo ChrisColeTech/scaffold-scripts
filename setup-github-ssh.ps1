@@ -60,6 +60,10 @@ if (-not $SkipKeygen) {
     Write-ColorOutput "🔑 Generating SSH key..." -Color Yellow
     ssh-keygen.exe -t ed25519 -C $Email -f $KeyPath -N '""'
     Write-ColorOutput "✅ SSH key generated" -Color Green
+    
+    # Set proper permissions on SSH keys
+    Set-SSHPermissions -FilePath $KeyPath
+    Set-SSHPermissions -FilePath "$KeyPath.pub"
 }
 
 # Start SSH agent and add key
@@ -84,6 +88,30 @@ if (Test-Path $SSHConfig) {
     $backupName = "config.backup.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
     Copy-Item $SSHConfig "$SSHDir\$backupName"
     Write-ColorOutput "📋 Backed up existing SSH config" -Color Blue
+}
+
+# Function to set proper Windows permissions on SSH files
+function Set-SSHPermissions {
+    param([string]$FilePath)
+    
+    try {
+        # Remove inheritance and all existing permissions
+        $acl = Get-Acl $FilePath
+        $acl.SetAccessRuleProtection($true, $false)
+        
+        # Add only current user with full control
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($currentUser, "FullControl", "Allow")
+        $acl.SetAccessRule($accessRule)
+        
+        # Apply the ACL
+        Set-Acl -Path $FilePath -AclObject $acl
+        Write-ColorOutput "✅ Set secure permissions on $FilePath" -Color Green
+    }
+    catch {
+        Write-ColorOutput "⚠️  Could not set permissions on $FilePath" -Color Yellow
+        Write-ColorOutput "You may need to fix permissions manually" -Color Yellow
+    }
 }
 
 # Check if GitHub config already exists
@@ -133,6 +161,9 @@ Host github.com
     
     Add-Content -Path $SSHConfig -Value $githubConfig
     Write-ColorOutput "✅ SSH config updated" -Color Green
+    
+    # Set proper permissions on config file
+    Set-SSHPermissions -FilePath $SSHConfig
 }
 
 # Add GitHub to known hosts
