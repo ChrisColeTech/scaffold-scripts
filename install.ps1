@@ -1,11 +1,11 @@
 # Scaffold Scripts CLI - GitHub Repository Installer for Windows
-# Usage: irm https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/install.ps1 | iex
 
 [CmdletBinding()]
 param()
 
 # Configuration
-$RepoUrl = "https://github.com/yourusername/scaffold-scripts"
+$RepoUrl = "https://github.com/ChrisColeTech/scaffold-scripts"
 $InstallDir = "$env:USERPROFILE\.scaffold-scripts"
 
 # Colors for output

@@ -28,8 +28,16 @@
     "dotnet",
     "project-generator"
   ],
-  "author": "Your Name",
+  "author": "ChrisColeTech",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChrisColeTech/scaffold-scripts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChrisColeTech/scaffold-scripts/issues"
+  },
+  "homepage": "https://github.com/ChrisColeTech/scaffold-scripts#readme",
   "dependencies": {
     "commander": "^11.1.0",
     "chalk": "^4.1.2",

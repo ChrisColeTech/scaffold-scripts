@@ -6,17 +6,17 @@ A production-ready CLI tool for managing and executing your own scaffold scripts
 
 ### Unix/Linux/macOS
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/install.sh | bash
 ```
 
 ### Windows PowerShell
 ```powershell
-irm https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/install.ps1 | iex
 ```
 
 ### Manual Installation
 ```bash
-git clone https://github.com/yourusername/scaffold-scripts.git
+git clone https://github.com/ChrisColeTech/scaffold-scripts.git
 cd scaffold-scripts
 npm install
 npm run build
@@ -323,7 +323,7 @@ scaffold -v -b my-powershell-script
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/scaffold-scripts.git
+git clone https://github.com/ChrisColeTech/scaffold-scripts.git
 cd scaffold-scripts
 
 # Install dependencies
@@ -340,7 +340,7 @@ npm install -g .
 
 ```bash
 # Clone and install locally
-git clone https://github.com/yourusername/scaffold-scripts.git
+git clone https://github.com/ChrisColeTech/scaffold-scripts.git
 cd scaffold-scripts
 
 # Use the local installer script
@@ -402,9 +402,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-- 📖 [Documentation](https://github.com/yourusername/scaffold-scripts)
-- 🐛 [Issues](https://github.com/yourusername/scaffold-scripts/issues)
-- 💬 [Discussions](https://github.com/yourusername/scaffold-scripts/discussions)
+- 📖 [Documentation](https://github.com/ChrisColeTech/scaffold-scripts)
+- 🐛 [Issues](https://github.com/ChrisColeTech/scaffold-scripts/issues)
+- 💬 [Discussions](https://github.com/ChrisColeTech/scaffold-scripts/discussions)
 
 ## 📚 Real-World Workflow
 

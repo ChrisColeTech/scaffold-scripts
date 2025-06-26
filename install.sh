@@ -1,6 +1,6 @@
 #!/bin/bash
 # Scaffold Scripts CLI - GitHub Repository Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/install.sh | bash
 
 set -e
 
@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-REPO_URL="https://github.com/yourusername/scaffold-scripts"
+REPO_URL="https://github.com/ChrisColeTech/scaffold-scripts"
 INSTALL_DIR="$HOME/.scaffold-scripts"
 
 # Function to compare versions
