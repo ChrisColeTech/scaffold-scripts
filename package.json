@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "bin": {
     "scaffold": "./bin/scaffold.js",
-    "scripts": "./bin/scaffold.js",
-    "sc": "./bin/scaffold.js"
+    "scripts": "./bin/scaffold.js"
   },
   "scripts": {
     "build": "tsc",

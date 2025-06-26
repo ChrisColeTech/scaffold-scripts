@@ -40,7 +40,7 @@ program
 // Add command
 program
   .command('add')
-  .alias('-a')
+  .alias('a')
   .description('add a new script')
   .argument('<name>', 'script name')
   .argument('<scriptPath>', 'path to script file')
@@ -59,7 +59,7 @@ program
 // Update command
 program
   .command('update')
-  .alias('-u')
+  .alias('u')
   .description('update an existing script')
   .argument('<name>', 'script name')
   .argument('<scriptPath>', 'path to new script file')
@@ -77,7 +77,7 @@ program
 // Remove command
 program
   .command('remove')
-  .alias('-r')
+  .alias('r')
   .description('remove a script')
   .argument('<name>', 'script name')
   .action(async (name) => {
@@ -92,7 +92,7 @@ program
 // List commands
 program
   .command('list')
-  .alias('-l')
+  .alias('l')
   .description('list available scripts')
   .option('-d, --detailed', 'show detailed information')
   .action(async (options) => {
