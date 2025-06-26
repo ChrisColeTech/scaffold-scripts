@@ -473,6 +473,36 @@ scaffold add setup-unix setup-unix.sh      # For macOS/Linux
 scaffold add setup-win setup-win.ps1       # For Windows
 ```
 
+## 🔐 GitHub SSH Setup
+
+To enable pushing commits directly from the CLI, set up SSH authentication:
+
+### Unix/Linux/macOS
+```bash
+curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/setup-github-ssh.sh | bash
+```
+
+### Windows PowerShell
+```powershell
+irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/setup-github-ssh.ps1 | iex
+```
+
+### Manual Setup
+```bash
+# Clone and run locally
+git clone https://github.com/ChrisColeTech/scaffold-scripts.git
+cd scaffold-scripts
+./setup-github-ssh.sh          # Unix/Linux/macOS
+# or
+.\setup-github-ssh.ps1         # Windows PowerShell
+```
+
+The script will:
+- Generate SSH keys for GitHub
+- Configure SSH client settings
+- Display your public key to add to GitHub
+- Test the connection
+
 ## 🤝 Contributing
 
 1. Fork the repository
