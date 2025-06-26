@@ -18,39 +18,39 @@ irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/script
 
 | Command | Aliases | Description | Usage Example |
 |---------|---------|-------------|---------------|
-| `scaffold` | `scripts` | Run a script | `scaffold setup-project` |
-| `scaffold add` | `scaffold a` / `scripts add` | Add a script | `scaffold add setup script.sh` |
-| `scaffold update` | `scaffold u` / `scripts update` | Update a script | `scaffold update setup new-script.sh` |
-| `scaffold remove` | `scaffold r` / `scripts remove` | Remove a script | `scaffold remove setup` |
-| `scaffold list` | `scaffold l` / `scripts list` | List all scripts | `scaffold list` |
-| `scaffold -v` | `scripts -v` | View script details | `scaffold -v setup` |
+| `scripts` | `scaffold` | Run a script | `scripts setup-project` |
+| `scripts add` | `scripts a` / `scaffold add` | Add a script | `scripts add setup script.sh` |
+| `scripts update` | `scripts u` / `scaffold update` | Update a script | `scripts update setup new-script.sh` |
+| `scripts remove` | `scripts r` / `scaffold remove` | Remove a script | `scripts remove setup` |
+| `scripts list` | `scripts l` / `scaffold list` | List all scripts | `scripts list` |
+| `scripts view` | `scripts v` / `scaffold view` | View script details | `scripts view setup` |
 
 **Choose your style:**
-- **Full commands:** `scaffold add`, `scaffold list` - Crystal clear
-- **Speed typing:** `scaffold a`, `scaffold l` - Faster option  
-- **Readable:** `scripts add`, `scripts list` - Self-explanatory
+- **Full commands:** `scripts add`, `scripts list` - Crystal clear and readable
+- **Speed typing:** `scripts a`, `scripts l`, `scripts v` - Faster option  
+- **Alternative:** `scaffold add`, `scaffold list` - Shorter commands
 
 ## 🔄 The Workflow (Crystal Clear)
 
 1. **Ask AI** → Use any prompt to describe what you want (see examples below)
 2. **Save script** → Copy AI's response to a file on your computer  
-3. **Add to scaffold** → `scaffold add script-name file.sh`
-4. **Run anywhere** → `scaffold script-name`
+3. **Add to scaffold** → `scripts add script-name file.sh`
+4. **Run anywhere** → `scripts script-name`
 
 ```bash
 # Example: AI gives you a setup script, you save it to setup.sh
-scaffold add setup setup.sh
-scaffold setup my-project
+scripts add setup setup.sh
+scripts setup my-project
 ```
 
 **Speed version:**
 ```bash
 # Same workflow, faster typing
-scaffold a setup setup.sh
-scaffold setup my-project
+scripts a setup setup.sh
+scripts setup my-project
 ```
 
-**What's happening in this complete example:** This shows the same workflow using two different command styles. In the first version, `scaffold` is the full command name for maximum clarity, `add` is the subcommand that registers scripts, `setup` becomes your custom script name, and `setup.sh` is your actual file. Then `scaffold setup my-project` runs that registered script with "my-project" as an argument. The speed version uses `scaffold a` (short alias for "add") to do exactly the same thing but with less typing - perfect when you're working fast and frequently.
+**What's happening in this complete example:** This shows the same workflow using two different command styles. In the first version, `scripts` is the full command name for maximum clarity, `add` is the subcommand that registers scripts, `setup` becomes your custom script name, and `setup.sh` is your actual file. Then `scripts setup my-project` runs that registered script with "my-project" as an argument. The speed version uses `scripts a` (short alias for "add") to do exactly the same thing but with less typing - perfect when you're working fast and frequently.
 
 ## 🤖 Example AI Prompts
 
@@ -97,15 +97,15 @@ chmod +x react-setup.sh
 **Step 3: Add to scaffold**
 ```bash
 # Add the file you just created:
-scaffold add project-setup project-setup.sh
+scripts add project-setup project-setup.sh
 ```
 
 **Step 4: Use it**
 ```bash
-scaffold project-setup my-awesome-app
+scripts project-setup my-awesome-app
 ```
 
-**What's happening in this complete example:** Here `scaffold` is the main command using its full name for documentation clarity. The `add` subcommand registers a new script where `project-setup` becomes your custom script name (what you'll type to run it later) and `project-setup.sh` is the path to your actual script file. Then when you run `scaffold project-setup my-awesome-app`, the `scaffold` command finds your registered script called "project-setup" and executes it, passing "my-awesome-app" as an argument to your script.
+**What's happening in this complete example:** Here `scripts` is the main command using its full name for documentation clarity. The `add` subcommand registers a new script where `project-setup` becomes your custom script name (what you'll type to run it later) and `project-setup.sh` is the path to your actual script file. Then when you run `scripts project-setup my-awesome-app`, the `scripts` command finds your registered script called "project-setup" and executes it, passing "my-awesome-app" as an argument to your script.
 
 ### Example 2: API Setup Script
 
@@ -143,15 +143,15 @@ nano api-setup.js
 chmod +x api-setup.js
 
 # Add to scaffold:
-scaffold add api-setup api-setup.js
+scripts add api-setup api-setup.js
 ```
 
 **Step 3: Use it**
 ```bash
-scaffold api-setup my-api
+scripts api-setup my-api
 ```
 
-**What's happening in this complete example:** This demonstrates working with JavaScript/Node.js scripts. The `scaffold` command uses its full name, `add` registers the script, `api-setup` is your chosen script name, and `api-setup.js` is your JavaScript file. When you later run `scaffold api-setup my-api`, the `scaffold` command executes your registered "api-setup" script and passes "my-api" as an argument for the API project name.
+**What's happening in this complete example:** This demonstrates working with JavaScript/Node.js scripts. The `scripts` command uses its full name, `add` registers the script, `api-setup` is your chosen script name, and `api-setup.js` is your JavaScript file. When you later run `scripts api-setup my-api`, the `scripts` command executes your registered "api-setup" script and passes "my-api" as an argument for the API project name.
 
 ### Example 3: Database Setup Script
 
@@ -193,15 +193,15 @@ nano postgres-setup.sh
 chmod +x postgres-setup.sh
 
 # Add to scaffold:
-scaffold add postgres-setup postgres-setup.sh
+scripts add postgres-setup postgres-setup.sh
 ```
 
 **Step 3: Use it**
 ```bash
-scaffold postgres-setup my-project-db
+scripts postgres-setup my-project-db
 ```
 
-**What's happening in this complete example:** This shows database setup script management. The `scaffold` command uses its full name for clarity, `add` registers your script, `postgres-setup` becomes your custom script name, and `postgres-setup.sh` is your actual bash script file. When you run `scaffold postgres-setup my-project-db`, the `scaffold` command finds and executes your registered "postgres-setup" script, passing "my-project-db" as the database name argument.
+**What's happening in this complete example:** This shows database setup script management. The `scripts` command uses its full name for clarity, `add` registers your script, `postgres-setup` becomes your custom script name, and `postgres-setup.sh` is your actual bash script file. When you run `scripts postgres-setup my-project-db`, the `scripts` command finds and executes your registered "postgres-setup" script, passing "my-project-db" as the database name argument.
 
 ### Workflow 4: Deployment Script
 
@@ -243,15 +243,15 @@ nano deploy-script.sh
 chmod +x deploy-script.sh
 
 # Add to scaffold:
-scaffold add deploy deploy-script.sh
+scripts add deploy deploy-script.sh
 ```
 
 **Step 3: Use it**
 ```bash
-scaffold deploy staging  # Deploy to staging
+scripts deploy staging  # Deploy to staging
 ```
 
-**What's happening in this complete example:** This demonstrates deployment script management. The `scaffold` command uses its full name, `add` registers your deployment script, `deploy` is your chosen script name (short and memorable), and `deploy-script.sh` is your actual script file. Later, `scaffold deploy staging` uses the `scaffold` command to run your registered "deploy" script with "staging" as the environment argument, making deployment as simple as one command.
+**What's happening in this complete example:** This demonstrates deployment script management. The `scripts` command uses its full name, `add` registers your deployment script, `deploy` is your chosen script name (short and memorable), and `deploy-script.sh` is your actual script file. Later, `scripts deploy staging` uses the `scripts` command to run your registered "deploy" script with "staging" as the environment argument, making deployment as simple as one command.
 
 ### Workflow 5: Development Environment
 
@@ -299,33 +299,33 @@ nano setup-dev.sh
 chmod +x setup-dev.sh
 
 # Add to scaffold:
-scaffold add dev-setup setup-dev.sh
+scripts add dev-setup setup-dev.sh
 ```
 
 **Step 3: Use it**
 ```bash
-scaffold dev-setup  # Complete environment in one command
+scripts dev-setup  # Complete environment in one command
 ```
 
-**What's happening in this complete example:** This shows environment setup automation. The `scaffold` command uses its full name, `add` registers your environment script, `dev-setup` is your descriptive script name, and `setup-dev.sh` is your actual script file. When you run `scaffold dev-setup`, the `scaffold` command executes your registered script to set up your entire development environment in one command - no arguments needed since the script handles everything internally.
+**What's happening in this complete example:** This shows environment setup automation. The `scripts` command uses its full name, `add` registers your environment script, `dev-setup` is your descriptive script name, and `setup-dev.sh` is your actual script file. When you run `scripts dev-setup`, the `scripts` command executes your registered script to set up your entire development environment in one command - no arguments needed since the script handles everything internally.
 
 ## 🔧 Management Commands
 
 ```bash
 # List all your scripts
-scaffold list
+scripts list
 
 # See script details
-scaffold -v my-script
+scripts view my-script
 
 # Update a script
-scaffold update my-script /path/to/new-script.sh
+scripts update my-script /path/to/new-script.sh
 
 # Remove a script
-scaffold remove my-script
+scripts remove my-script
 ```
 
-**What's happening in this complete example:** These are the main management commands using the full `scaffold` command name for clarity. `scaffold list` shows all your registered scripts like a directory. `scaffold -v my-script` uses the `-v` flag (meaning "verbose" or "view") to show details about a specific script called "my-script". `scaffold update my-script /path/to/new-script.sh` replaces your existing "my-script" with a new version from the file path. `scaffold remove my-script` permanently deletes the script called "my-script" from your library.
+**What's happening in this complete example:** These are the main management commands using the clear `scripts` command name for clarity. `scripts list` shows all your registered scripts like a directory. `scripts view my-script` shows details about a specific script called "my-script". `scripts update my-script /path/to/new-script.sh` replaces your existing "my-script" with a new version from the file path. `scripts remove my-script` permanently deletes the script called "my-script" from your library.
 
 ## 🎯 More Production Prompts
 
@@ -406,16 +406,16 @@ Output detailed report with severity levels and fix suggestions.
 **Student working on projects:**
 ```bash
 # Speed workflow with shortcuts
-scaffold a web-setup web-project-setup.sh
-scaffold a homework homework-template.sh  
-scaffold a deploy deploy-to-server.sh
+scripts a web-setup web-project-setup.sh
+scripts a homework homework-template.sh  
+scripts a deploy deploy-to-server.sh
 
 # Running scripts
-scaffold web-setup my-assignment
-scaffold l  # list all scripts
+scripts web-setup my-assignment
+scripts l  # list all scripts
 ```
 
-**What's happening in this complete example:** This shows a student's rapid workflow using command aliases for maximum speed. `scaffold a` means "scaffold add" for quickly registering multiple scripts: "web-setup", "homework", and "deploy" with their respective files. Then `scaffold web-setup my-assignment` runs the "web-setup" script with "my-assignment" as an argument. Finally `scaffold l` (short for "scaffold list") quickly shows all registered scripts. Perfect for fast, frequent use.
+**What's happening in this complete example:** This shows a student's rapid workflow using command aliases for maximum speed. `scripts a` means "scripts add" for quickly registering multiple scripts: "web-setup", "homework", and "deploy" with their respective files. Then `scripts web-setup my-assignment` runs the "web-setup" script with "my-assignment" as an argument. Finally `scripts l` (short for "scripts list") quickly shows all registered scripts. Perfect for fast, frequent use.
 
 **Someone automating daily tasks:**
 ```bash
@@ -429,22 +429,22 @@ scripts backup
 scripts list
 ```
 
-**What's happening in this complete example:** This shows daily automation using the `scripts` alias, which is the most descriptive and readable option. `scripts add` clearly communicates "add a script to my collection" as it registers three automation scripts: "backup" from "backup-files.sh", "clean" from "cleanup-downloads.sh", and "update" from "update-system.sh". Then `scripts backup` obviously means "run my backup script" and `scripts list` shows all registered scripts. This alias is perfect for automation tasks or when sharing commands with others who need maximum clarity.
+**What's happening in this complete example:** This shows daily automation using clear command names. `scripts add` registers three automation scripts: "backup" from "backup-files.sh", "clean" from "cleanup-downloads.sh", and "update" from "update-system.sh". Then `scripts backup` runs the backup script and `scripts list` shows all registered scripts. Perfect for automation tasks where clarity is important.
 
 **Team lead sharing workflows:**
 ```bash
 # Standard commands for documentation
-scaffold add onboard new-team-member.sh
-scaffold add test run-all-tests.py
-scaffold add release release-version.sh
+scripts add onboard new-team-member.sh
+scripts add test run-all-tests.py
+scripts add release release-version.sh
 
 # Daily workflow  
-scaffold onboard john-doe
-scaffold update test new-test-script.py
-scaffold remove old-workflow
+scripts onboard john-doe
+scripts update test new-test-script.py
+scripts remove old-workflow
 ```
 
-**What's happening in this complete example:** This demonstrates team workflow using the full `scaffold` command name for official documentation. `scaffold add` registers three team scripts: "onboard" from "new-team-member.sh", "test" from "run-all-tests.py", and "release" from "release-version.sh". In daily use, `scaffold onboard john-doe` runs the onboarding process with "john-doe" as the new team member name. `scaffold update test new-test-script.py` replaces the existing "test" script with a newer version from "new-test-script.py". `scaffold remove old-workflow` permanently deletes the outdated "old-workflow" script. The full command name is ideal for team documentation and training materials.
+**What's happening in this complete example:** This demonstrates team workflow using the full `scripts` command name for official documentation. `scripts add` registers three team scripts: "onboard" from "new-team-member.sh", "test" from "run-all-tests.py", and "release" from "release-version.sh". In daily use, `scripts onboard john-doe` runs the onboarding process with "john-doe" as the new team member name. `scripts update test new-test-script.py` replaces the existing "test" script with a newer version from "new-test-script.py". `scripts remove old-workflow` permanently deletes the outdated "old-workflow" script. The full command name is ideal for team documentation and training materials.
 
 ## 🚀 Why This Approach Works
 
@@ -479,11 +479,11 @@ The CLI stores scripts in `~/.scaffold-scripts/` and automatically:
 **Recommendation:** Ask AI to generate separate scripts for each platform:
 ```bash
 # Ask AI for both versions
-scaffold add setup-unix setup-unix.sh      # For macOS/Linux  
-scaffold add setup-win setup-win.ps1       # For Windows
+scripts add setup-unix setup-unix.sh      # For macOS/Linux  
+scripts add setup-win setup-win.ps1       # For Windows
 ```
 
-**What's happening in this complete example:** This demonstrates platform-specific script management using the full `scaffold` command name for clarity. `scaffold add setup-unix setup-unix.sh` registers a Unix/Linux shell script under the name "setup-unix", while `scaffold add setup-win setup-win.ps1` registers a Windows PowerShell script under the name "setup-win". Using descriptive names like "setup-unix" and "setup-win" makes it obvious which script to run on each platform.
+**What's happening in this complete example:** This demonstrates platform-specific script management using the full `scripts` command name for clarity. `scripts add setup-unix setup-unix.sh` registers a Unix/Linux shell script under the name "setup-unix", while `scripts add setup-win setup-win.ps1` registers a Windows PowerShell script under the name "setup-win". Using descriptive names like "setup-unix" and "setup-win" makes it obvious which script to run on each platform.
 
 ## 🔐 GitHub SSH Setup
 
@@ -583,10 +583,10 @@ Scaffold Scripts CLI accepts the following file types. **Any file extension not 
 You can export your scripts as individual files anytime:
 
 ```bash
-scaffold export ./my-scripts
+scripts export ./my-scripts
 ```
 
-**What's happening in this complete example:** The `scaffold` command uses its full name, `export` is the subcommand that extracts scripts from your library, and `./my-scripts` is the directory path where all your scripts will be saved as individual executable files with usage instructions.
+**What's happening in this complete example:** The `scripts` command uses its full name, `export` is the subcommand that extracts scripts from your library, and `./my-scripts` is the directory path where all your scripts will be saved as individual executable files with usage instructions.
 
 This creates:
 - Individual `.sh` files (executable and runnable)
@@ -598,10 +598,10 @@ This creates:
 Simple interactive uninstall:
 
 ```bash
-scaffold uninstall
+scripts uninstall
 ```
 
-**What's happening in this complete example:** The `scaffold` command uses its full name and `uninstall` is the subcommand that removes the entire CLI tool from your system, with interactive prompts to optionally export your scripts first and choose whether to keep your script database.
+**What's happening in this complete example:** The `scripts` command uses its full name and `uninstall` is the subcommand that removes the entire CLI tool from your system, with interactive prompts to optionally export your scripts first and choose whether to keep your script database.
 
 **The command will ask you:**
 1. **Export scripts?** - Save scripts as files you can run directly

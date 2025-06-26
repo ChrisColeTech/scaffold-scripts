@@ -22,11 +22,10 @@ program
 // Main scaffolding commands
 program
   .argument('[script-name]', 'run script with specified name')
-  .option('-v, --view', 'view script details instead of executing')
-  .action(async (scriptName, options) => {
+  .action(async (scriptName) => {
     try {
       if (scriptName) {
-        await handleScriptCommand(scriptName, options.view);
+        await handleScriptCommand(scriptName, false);
       } else {
         console.log(chalk.yellow('Please specify a script name or use --help for usage information.'));
         program.help();
@@ -98,6 +97,21 @@ program
   .action(async (options) => {
     try {
       await listCommands(options.detailed);
+    } catch (error: any) {
+      console.error(chalk.red(`Error: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// View command
+program
+  .command('view')
+  .alias('v')
+  .description('view script details')
+  .argument('<name>', 'script name')
+  .action(async (name) => {
+    try {
+      await handleScriptCommand(name, true);
     } catch (error: any) {
       console.error(chalk.red(`Error: ${error.message}`));
       process.exit(1);
