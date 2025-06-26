@@ -11,15 +11,23 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
-EMAIL="chris@chriscole.tech"
-KEY_NAME="github_key"
-SSH_DIR="$HOME/.ssh"
-KEY_PATH="$SSH_DIR/$KEY_NAME"
-
 echo -e "${BLUE}🔐 GitHub SSH Setup Script${NC}"
 echo -e "${BLUE}===========================${NC}"
 echo ""
+
+# Prompt for email address
+echo -e -n "${YELLOW}Enter your GitHub email address: ${NC}"
+read -r EMAIL
+
+if [[ -z "$EMAIL" ]]; then
+    echo -e "${RED}❌ Error: Email address is required${NC}"
+    exit 1
+fi
+
+# Configuration
+KEY_NAME="github_key"
+SSH_DIR="$HOME/.ssh"
+KEY_PATH="$SSH_DIR/$KEY_NAME"
 
 # Check if SSH directory exists
 if [[ ! -d "$SSH_DIR" ]]; then
