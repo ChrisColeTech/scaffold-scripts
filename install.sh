@@ -1,5 +1,6 @@
 #!/bin/bash
-# Scaffold Scripts CLI - Unix/Linux/macOS Installer
+# Scaffold Scripts CLI - GitHub Repository Installer
+# Usage: curl -fsSL https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/install.sh | bash
 
 set -e
 
@@ -12,9 +13,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 REPO_URL="https://github.com/yourusername/scaffold-scripts"
-LATEST_RELEASE_URL="https://api.github.com/repos/yourusername/scaffold-scripts/releases/latest"
 INSTALL_DIR="$HOME/.scaffold-scripts"
-BIN_DIR="$HOME/.local/bin"
 
 # Function to compare versions
 version_gt() {
@@ -62,44 +61,40 @@ fi
 
 echo -e "${GREEN}✅ npm detected${NC}"
 
-# Create directories
-echo -e "${YELLOW}📁 Creating directories...${NC}"
+# Create install directory
+echo -e "${YELLOW}📁 Creating install directory...${NC}"
 mkdir -p "$INSTALL_DIR"
-mkdir -p "$BIN_DIR"
 
-# Install via npm (will fail as package isn't published yet)
-echo -e "${YELLOW}📦 Installing Scaffold Scripts CLI...${NC}"
-echo -e "${YELLOW}Note: Installing from source as npm package isn't published yet${NC}"
-
-# Skip npm install and go straight to source installation
-echo -e "${YELLOW}Installing from source repository...${NC}"
-
-# Install from source
-if command_exists git; then
-    echo -e "${YELLOW}📥 Cloning repository...${NC}"
-    cd /tmp
-    rm -rf scaffold-scripts
-    git clone "$REPO_URL.git"
-    cd scaffold-scripts
-    
-    echo -e "${YELLOW}📦 Installing dependencies...${NC}"
-    npm install
-    
-    echo -e "${YELLOW}🔨 Building project...${NC}"
-    npm run build
-    
-    echo -e "${YELLOW}🔗 Installing globally...${NC}"
-    npm install -g .
-    
-    cd ..
-    rm -rf scaffold-scripts
-    
-    echo -e "${GREEN}✅ Successfully installed from source${NC}"
-else
-    echo -e "${RED}❌ Git not found. Cannot install from source${NC}"
+# Check if Git is available
+if ! command_exists git; then
+    echo -e "${RED}❌ Git not found${NC}"
     echo -e "${YELLOW}Please install Git first: https://git-scm.com${NC}"
     exit 1
 fi
+
+echo -e "${GREEN}✅ Git detected${NC}"
+
+# Install from GitHub repository
+echo -e "${YELLOW}📥 Cloning Scaffold Scripts from GitHub...${NC}"
+cd /tmp
+rm -rf scaffold-scripts
+git clone "$REPO_URL.git" scaffold-scripts
+cd scaffold-scripts
+
+echo -e "${YELLOW}📦 Installing dependencies...${NC}"
+npm install
+
+echo -e "${YELLOW}🔨 Building project...${NC}"
+npm run build
+
+echo -e "${YELLOW}🔗 Installing globally...${NC}"
+npm install -g .
+
+# Cleanup
+cd /tmp
+rm -rf scaffold-scripts
+
+echo -e "${GREEN}✅ Successfully installed Scaffold Scripts from GitHub${NC}"
 
 # Verify installation
 echo -e "${YELLOW}🔍 Verifying installation...${NC}"

@@ -14,9 +14,13 @@ curl -fsSL https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/
 irm https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/install.ps1 | iex
 ```
 
-### Via npm
+### Manual Installation
 ```bash
-npm install -g scaffold-scripts
+git clone https://github.com/yourusername/scaffold-scripts.git
+cd scaffold-scripts
+npm install
+npm run build
+npm install -g .
 ```
 
 ## ✨ Features
@@ -330,6 +334,17 @@ npm run build
 
 # Install globally
 npm install -g .
+```
+
+### Local Development
+
+```bash
+# Clone and install locally
+git clone https://github.com/yourusername/scaffold-scripts.git
+cd scaffold-scripts
+
+# Use the local installer script
+./install-local.sh
 ```
 
 ## 📋 Requirements

@@ -1,4 +1,5 @@
-# Scaffold Scripts CLI - Windows PowerShell Installer
+# Scaffold Scripts CLI - GitHub Repository Installer for Windows
+# Usage: irm https://raw.githubusercontent.com/yourusername/scaffold-scripts/main/install.ps1 | iex
 
 [CmdletBinding()]
 param()
@@ -79,48 +80,47 @@ if (-not (Test-Command "npm")) {
 
 Write-ColorOutput "✅ npm detected" -Color Green
 
-# Create directories
-Write-ColorOutput "📁 Creating directories..." -Color Yellow
+# Create install directory
+Write-ColorOutput "📁 Creating install directory..." -Color Yellow
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 
-# Install via npm (skip as package isn't published yet)
-Write-ColorOutput "📦 Installing Scaffold Scripts CLI..." -Color Yellow
-Write-ColorOutput "Note: Installing from source as npm package isn't published yet" -Color Yellow
-
-# Install from source instead
-Write-ColorOutput "Installing from source repository..." -Color Yellow
-
-# Install from source
-if (Test-Command "git") {
-    Write-ColorOutput "📥 Cloning repository..." -Color Yellow
-    Set-Location $env:TEMP
-    
-    if (Test-Path "scaffold-scripts") {
-        Remove-Item -Recurse -Force "scaffold-scripts"
-    }
-    
-    git clone "$RepoUrl.git"
-    Set-Location "scaffold-scripts"
-    
-    Write-ColorOutput "📦 Installing dependencies..." -Color Yellow
-    npm install
-    
-    Write-ColorOutput "🔨 Building project..." -Color Yellow
-    npm run build
-    
-    Write-ColorOutput "🔗 Installing globally..." -Color Yellow
-    npm install -g .
-    
-    Set-Location ..
-    Remove-Item -Recurse -Force "scaffold-scripts"
-    
-    Write-ColorOutput "✅ Successfully installed from source" -Color Green
-}
-else {
-    Write-ColorOutput "❌ Git not found. Cannot install from source" -Color Red
+# Check if Git is available
+if (-not (Test-Command "git")) {
+    Write-ColorOutput "❌ Git not found" -Color Red
     Write-ColorOutput "Please install Git from https://git-scm.com/download/win" -Color Yellow
+    Write-ColorOutput "Press Enter to open download page..." -Color Yellow
+    Read-Host
+    Start-Process "https://git-scm.com/download/win"
     exit 1
 }
+
+Write-ColorOutput "✅ Git detected" -Color Green
+
+# Install from GitHub repository
+Write-ColorOutput "📥 Cloning Scaffold Scripts from GitHub..." -Color Yellow
+Set-Location $env:TEMP
+
+if (Test-Path "scaffold-scripts") {
+    Remove-Item -Recurse -Force "scaffold-scripts"
+}
+
+git clone "$RepoUrl.git" scaffold-scripts
+Set-Location "scaffold-scripts"
+
+Write-ColorOutput "📦 Installing dependencies..." -Color Yellow
+npm install
+
+Write-ColorOutput "🔨 Building project..." -Color Yellow
+npm run build
+
+Write-ColorOutput "🔗 Installing globally..." -Color Yellow
+npm install -g .
+
+# Cleanup
+Set-Location $env:TEMP
+Remove-Item -Recurse -Force "scaffold-scripts"
+
+Write-ColorOutput "✅ Successfully installed Scaffold Scripts from GitHub" -Color Green
 
 # Verify installation
 Write-ColorOutput "🔍 Verifying installation..." -Color Yellow
