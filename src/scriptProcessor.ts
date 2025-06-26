@@ -90,7 +90,7 @@ export class ScriptProcessor {
    * Create a ScaffoldCommand from processed script
    */
   createCommand(
-    type: 'frontend' | 'backend' | 'init',
+    type: 'script' | 'init',
     name: string,
     processedScript: ProcessedScript,
     options: {
