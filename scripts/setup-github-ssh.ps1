@@ -29,38 +29,41 @@ Write-Host "Generating SSH key (this will take a moment)..." -ForegroundColor Ye
 
 $keyPath = "$SSHDir\github_key"
 
-# Generate SSH key with no passphrase
-try {
-    # Use Process.Start to avoid hanging
-    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
-    $processInfo.FileName = "ssh-keygen.exe"
-    $processInfo.Arguments = "-t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`""
-    $processInfo.UseShellExecute = $false
-    $processInfo.RedirectStandardInput = $true
-    $processInfo.RedirectStandardOutput = $true
-    $processInfo.RedirectStandardError = $true
-    $processInfo.CreateNoWindow = $true
-    
-    $process = [System.Diagnostics.Process]::Start($processInfo)
-    
-    # Send empty responses for any prompts
-    $process.StandardInput.WriteLine("")
-    $process.StandardInput.WriteLine("y")
-    $process.StandardInput.Close()
-    
-    $process.WaitForExit()
-    
-    $output = $process.StandardOutput.ReadToEnd()
-    $error = $process.StandardError.ReadToEnd()
-    
-    if ($process.ExitCode -ne 0) {
-        throw "SSH key generation failed. Output: $output Error: $error"
+# Check if key already exists and handle it
+if (Test-Path $keyPath) {
+    Write-Host "SSH key already exists at $keyPath" -ForegroundColor Yellow
+    Write-Host "Do you want to overwrite it? (y/N): " -NoNewline -ForegroundColor Yellow
+    $response = Read-Host
+    if ($response -notmatch "^[yY]") {
+        Write-Host "Using existing key..." -ForegroundColor Green
+        $skipGeneration = $true
+    } else {
+        Remove-Item $keyPath -Force -ErrorAction SilentlyContinue
+        Remove-Item "$keyPath.pub" -Force -ErrorAction SilentlyContinue
     }
-} catch {
-    Write-Host "Error generating SSH key: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "Please run this manually:" -ForegroundColor Yellow
-    Write-Host "ssh-keygen -t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`"" -ForegroundColor White
-    exit 1
+}
+
+# Generate SSH key with no passphrase
+if (-not $skipGeneration) {
+    try {
+        # Simple direct call with proper quoting
+        $arguments = "-t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`" -q"
+        
+        Write-Host "Running: ssh-keygen $arguments" -ForegroundColor Gray
+        
+        $process = Start-Process -FilePath "ssh-keygen.exe" -ArgumentList $arguments -Wait -PassThru -NoNewWindow
+        
+        if ($process.ExitCode -ne 0) {
+            throw "SSH key generation failed with exit code $($process.ExitCode)"
+        }
+        
+        Write-Host "✓ SSH key generated successfully!" -ForegroundColor Green
+    } catch {
+        Write-Host "Error generating SSH key: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Please run this manually:" -ForegroundColor Yellow
+        Write-Host "ssh-keygen -t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`"" -ForegroundColor White
+        exit 1
+    }
 }
 
 # Check if key was created
