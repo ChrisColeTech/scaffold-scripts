@@ -31,16 +31,35 @@ $keyPath = "$SSHDir\github_key"
 
 # Generate SSH key with no passphrase
 try {
-    $args = @("-t", "ed25519", "-C", $Email, "-f", $keyPath, "-N", "")
-    $result = & ssh-keygen.exe $args 2>&1
+    # Use Process.Start to avoid hanging
+    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processInfo.FileName = "ssh-keygen.exe"
+    $processInfo.Arguments = "-t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`""
+    $processInfo.UseShellExecute = $false
+    $processInfo.RedirectStandardInput = $true
+    $processInfo.RedirectStandardOutput = $true
+    $processInfo.RedirectStandardError = $true
+    $processInfo.CreateNoWindow = $true
     
-    if ($LASTEXITCODE -ne 0) {
-        throw "SSH key generation failed: $result"
+    $process = [System.Diagnostics.Process]::Start($processInfo)
+    
+    # Send empty responses for any prompts
+    $process.StandardInput.WriteLine("")
+    $process.StandardInput.WriteLine("y")
+    $process.StandardInput.Close()
+    
+    $process.WaitForExit()
+    
+    $output = $process.StandardOutput.ReadToEnd()
+    $error = $process.StandardError.ReadToEnd()
+    
+    if ($process.ExitCode -ne 0) {
+        throw "SSH key generation failed. Output: $output Error: $error"
     }
 } catch {
     Write-Host "Error generating SSH key: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Please run this manually:" -ForegroundColor Yellow
-    Write-Host "ssh-keygen -t ed25519 -C $Email -f `"$keyPath`" -N `"`"" -ForegroundColor White
+    Write-Host "ssh-keygen -t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`"" -ForegroundColor White
     exit 1
 }
 
