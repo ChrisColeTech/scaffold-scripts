@@ -16,6 +16,11 @@ LATEST_RELEASE_URL="https://api.github.com/repos/yourusername/scaffold-scripts/r
 INSTALL_DIR="$HOME/.scaffold-scripts"
 BIN_DIR="$HOME/.local/bin"
 
+# Function to compare versions
+version_gt() {
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"
+}
+
 echo -e "${BLUE}🚀 Scaffold Scripts CLI Installer${NC}"
 echo -e "${BLUE}===================================${NC}"
 
@@ -41,8 +46,8 @@ fi
 NODE_VERSION=$(node --version | cut -d'v' -f2)
 REQUIRED_VERSION="16.0.0"
 
-if ! node -e "process.exit(require('semver').gte('$NODE_VERSION', '$REQUIRED_VERSION'))" 2>/dev/null; then
-    echo -e "${RED}❌ Node.js version $NODE_VERSION is too old${NC}"
+if version_gt "$REQUIRED_VERSION" "$NODE_VERSION"; then
+    echo -e "${RED}❌ Node.js version v$NODE_VERSION is too old${NC}"
     echo -e "${YELLOW}Please upgrade to Node.js 16+ from https://nodejs.org${NC}"
     exit 1
 fi
@@ -62,39 +67,38 @@ echo -e "${YELLOW}📁 Creating directories...${NC}"
 mkdir -p "$INSTALL_DIR"
 mkdir -p "$BIN_DIR"
 
-# Install via npm
+# Install via npm (will fail as package isn't published yet)
 echo -e "${YELLOW}📦 Installing Scaffold Scripts CLI...${NC}"
-if npm install -g scaffold-scripts; then
-    echo -e "${GREEN}✅ Successfully installed scaffold-scripts${NC}"
-else
-    echo -e "${RED}❌ Failed to install via npm${NC}"
-    echo -e "${YELLOW}Trying alternative installation method...${NC}"
+echo -e "${YELLOW}Note: Installing from source as npm package isn't published yet${NC}"
+
+# Skip npm install and go straight to source installation
+echo -e "${YELLOW}Installing from source repository...${NC}"
+
+# Install from source
+if command_exists git; then
+    echo -e "${YELLOW}📥 Cloning repository...${NC}"
+    cd /tmp
+    rm -rf scaffold-scripts
+    git clone "$REPO_URL.git"
+    cd scaffold-scripts
     
-    # Alternative: Install from source
-    if command_exists git; then
-        echo -e "${YELLOW}📥 Cloning repository...${NC}"
-        cd /tmp
-        rm -rf scaffold-scripts
-        git clone "$REPO_URL.git"
-        cd scaffold-scripts
-        
-        echo -e "${YELLOW}📦 Installing dependencies...${NC}"
-        npm install
-        
-        echo -e "${YELLOW}🔨 Building project...${NC}"
-        npm run build
-        
-        echo -e "${YELLOW}🔗 Installing globally...${NC}"
-        npm install -g .
-        
-        cd ..
-        rm -rf scaffold-scripts
-        
-        echo -e "${GREEN}✅ Successfully installed from source${NC}"
-    else
-        echo -e "${RED}❌ Git not found. Cannot install from source${NC}"
-        exit 1
-    fi
+    echo -e "${YELLOW}📦 Installing dependencies...${NC}"
+    npm install
+    
+    echo -e "${YELLOW}🔨 Building project...${NC}"
+    npm run build
+    
+    echo -e "${YELLOW}🔗 Installing globally...${NC}"
+    npm install -g .
+    
+    cd ..
+    rm -rf scaffold-scripts
+    
+    echo -e "${GREEN}✅ Successfully installed from source${NC}"
+else
+    echo -e "${RED}❌ Git not found. Cannot install from source${NC}"
+    echo -e "${YELLOW}Please install Git first: https://git-scm.com${NC}"
+    exit 1
 fi
 
 # Verify installation
