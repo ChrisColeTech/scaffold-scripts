@@ -28,12 +28,14 @@ if (Test-Path $KeyPath) {
     if ($overwrite -notmatch "^[yY]") {
         Write-Host "Using existing key." -ForegroundColor Green
     } else {
-        Write-Host "Generating new SSH key..." -ForegroundColor Yellow
-        ssh-keygen.exe -t ed25519 -C $Email -f $KeyPath -N '""'
+        Write-Host "Generating new SSH key (no passphrase)..." -ForegroundColor Yellow
+        # Use echo to pipe empty responses to ssh-keygen
+        "y" | ssh-keygen.exe -t ed25519 -C $Email -f $KeyPath -N '""'
     }
 } else {
-    Write-Host "Generating SSH key..." -ForegroundColor Yellow
-    ssh-keygen.exe -t ed25519 -C $Email -f $KeyPath -N '""'
+    Write-Host "Generating SSH key (no passphrase)..." -ForegroundColor Yellow
+    # Use echo to pipe empty responses to ssh-keygen  
+    "y" | ssh-keygen.exe -t ed25519 -C $Email -f $KeyPath -N '""'
 }
 
 # Create SSH config
