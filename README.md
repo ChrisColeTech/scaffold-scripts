@@ -12,37 +12,45 @@ npm install -g scaffold-scripts
 
 ```bash
 # Add a script to your library
-scaffold add my-script path/to/script.sh
+scripts add my-script path/to/script.sh
 
 # Run your script from anywhere
-scaffold my-script
+scripts my-script
 
 # List all scripts
-scaffold list
-
-# Speed shortcuts
-scaffold a my-script script.sh    # Add quickly
-scaffold my-script                 # Run quickly
-scripts list                       # Readable version
+scripts list
 ```
+
+## Commands
+
+| Command | Aliases | Description |
+|---------|---------|-------------|
+| `scripts add` | `scripts a` / `scaffold add` | Add a script |
+| `scripts list` | `scripts l` / `scaffold list` | List all scripts |
+| `scripts remove` | `scripts r` / `scaffold remove` | Remove a script |
+| `scripts update` | `scripts u` / `scaffold update` | Update a script |
+| `scripts view` | `scripts v` / `scaffold view` | View script details |
+
+**Speed shortcuts:** Use `scripts a`, `scripts l`, `scripts r`, `scripts u`, `scripts v` for faster typing.  
+**Alternative:** Use `scaffold` instead of `scripts` for shorter commands.
 
 ## The Workflow
 
 1. **Ask AI** → Get a script from ChatGPT/Claude for any task
 2. **Save locally** → Copy to a `.sh`, `.py`, `.js`, or `.ps1` file  
-3. **Add to scaffold** → `scaffold add script-name file.sh`
-4. **Run anywhere** → `scaffold script-name`
+3. **Add to scaffold** → `scripts add script-name file.sh`
+4. **Run anywhere** → `scripts script-name`
 
 ## Examples
 
 ```bash
 # AI gives you a React setup script
-scaffold add react-setup setup.sh
-scaffold react-setup my-app
+scripts add react-setup setup.sh
+scripts react-setup my-app
 
 # AI gives you a deployment script  
-scaffold add deploy deploy.py
-scaffold deploy staging
+scripts add deploy deploy.py
+scripts deploy staging
 ```
 
 ## Supported File Types

@@ -116,6 +116,24 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     const lResult = execSync(`node ${CLI_PATH} l`, { encoding: 'utf8', stdio: 'pipe' });
     const listResult = execSync(`node ${CLI_PATH} list`, { encoding: 'utf8', stdio: 'pipe' });
     expect(lResult).toBe(listResult);
+    
+    // Test 'v' alias for 'view' command - should show error for missing arguments
+    try {
+      execSync(`node ${CLI_PATH} v`, { stdio: 'pipe' });
+    } catch (error: any) {
+      result = error.stdout?.toString() || error.stderr?.toString() || '';
+      expect(result).toContain('missing required argument');
+      expect(result).not.toContain('unknown option');
+      expect(result).not.toContain('unknown command');
+    }
+    
+    // Test 'view' full command produces same error
+    try {
+      execSync(`node ${CLI_PATH} view`, { stdio: 'pipe' });
+    } catch (error: any) {
+      const viewResult = error.stdout?.toString() || error.stderr?.toString() || '';
+      expect(viewResult).toContain('missing required argument');
+    }
   });
 
   it('should reject old-style flag syntax', () => {
