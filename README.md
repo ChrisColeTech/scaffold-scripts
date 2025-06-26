@@ -16,14 +16,14 @@ irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/instal
 
 ## ✨ Simple Commands
 
-| Command | Alias | Usage Examples |
-|---------|-------|----------------|
-| `scaffold my-script` | `ss my-script` | `scaffold setup-project`<br>`ss setup-project` |
-| `scaffold add name /path` | `scaffold -a` / `ss -a` | `scaffold add setup-project script.sh`<br>`ss -a setup-project script.sh` |
-| `scaffold update name /path` | `scaffold -u` / `ss -u` | `scaffold update setup-project new-script.sh`<br>`ss -u setup-project new-script.sh` |
-| `scaffold remove name` | `scaffold -r` / `ss -r` | `scaffold remove setup-project`<br>`ss -r setup-project` |
-| `scaffold list` | `scaffold -l` / `ss -l` | `scaffold list`<br>`ss -l` |
-| `scaffold -v name` | `ss -v` | `scaffold -v setup-project`<br>`ss -v setup-project` |
+| Command | Alias | Description | Usage Example |
+|---------|-------|-------------|---------------|
+| `scaffold` | `ss` | Run a script | `scaffold setup-project` / `ss setup-project` |
+| `scaffold add` | `scaffold -a` / `ss -a` | Add a script | `scaffold add setup script.sh` / `ss -a setup script.sh` |
+| `scaffold update` | `scaffold -u` / `ss -u` | Update a script | `scaffold update setup new-script.sh` / `ss -u setup new-script.sh` |
+| `scaffold remove` | `scaffold -r` / `ss -r` | Remove a script | `scaffold remove setup` / `ss -r setup` |
+| `scaffold list` | `scaffold -l` / `ss -l` | List all scripts | `scaffold list` / `ss -l` |
+| `scaffold -v` | `ss -v` | View script details | `scaffold -v setup` / `ss -v setup` |
 
 **Pro tip:** Use `ss` for speed! Same commands, less typing.
 
