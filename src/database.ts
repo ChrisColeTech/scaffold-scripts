@@ -3,7 +3,6 @@ import { config, ensureDbFolder } from './config.js';
 
 export interface ScaffoldCommand {
   id?: number;
-  type: 'frontend' | 'backend' | 'init';
   name: string;
   
   // Multi-script storage
@@ -64,7 +63,6 @@ export class ScaffoldDatabase {
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS commands (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          type TEXT NOT NULL CHECK (type IN ('frontend', 'backend', 'init')),
           name TEXT NOT NULL,
           
           -- Multi-script storage
@@ -82,10 +80,10 @@ export class ScaffoldDatabase {
           description TEXT,
           createdAt TEXT NOT NULL,
           updatedAt TEXT NOT NULL,
-          UNIQUE(type, name)
+          UNIQUE(name)
         );
 
-        CREATE INDEX IF NOT EXISTS idx_type_name ON commands (type, name);
+        CREATE INDEX IF NOT EXISTS idx_name ON commands (name);
         CREATE INDEX IF NOT EXISTS idx_alias ON commands (alias);
         CREATE INDEX IF NOT EXISTS idx_script_type ON commands (script_type);
         CREATE INDEX IF NOT EXISTS idx_original_platform ON commands (original_platform);
@@ -137,10 +135,9 @@ export class ScaffoldDatabase {
     
     return new Promise((resolve, reject) => {
       this.db.run(
-        `INSERT INTO commands (type, name, script_original, script_windows, script_unix, script_cross_platform, original_platform, script_type, platform, alias, description, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO commands (name, script_original, script_windows, script_unix, script_cross_platform, original_platform, script_type, platform, alias, description, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          command.type,
           command.name,
           command.script_original,
           command.script_windows || null,
@@ -165,7 +162,7 @@ export class ScaffoldDatabase {
     });
   }
 
-  async updateCommand(type: string, name: string, updates: Partial<ScaffoldCommand>): Promise<boolean> {
+  async updateCommand(name: string, updates: Partial<ScaffoldCommand>): Promise<boolean> {
     await this.initPromise;
     
     return new Promise((resolve, reject) => {
@@ -221,10 +218,10 @@ export class ScaffoldDatabase {
       
       fields.push('updatedAt = ?');
       values.push(new Date().toISOString());
-      values.push(type, name);
+      values.push(name);
       
       this.db.run(
-        `UPDATE commands SET ${fields.join(', ')} WHERE type = ? AND name = ?`,
+        `UPDATE commands SET ${fields.join(', ')} WHERE name = ?`,
         values,
         function(err) {
           if (err) {
@@ -237,13 +234,13 @@ export class ScaffoldDatabase {
     });
   }
 
-  async removeCommand(type: string, name: string): Promise<boolean> {
+  async removeCommand(name: string): Promise<boolean> {
     await this.initPromise;
     
     return new Promise((resolve, reject) => {
       this.db.run(
-        'DELETE FROM commands WHERE type = ? AND name = ?',
-        [type, name],
+        'DELETE FROM commands WHERE name = ?',
+        [name],
         function(err) {
           if (err) {
             reject(err);
@@ -255,13 +252,13 @@ export class ScaffoldDatabase {
     });
   }
 
-  async getCommand(type: string, name: string): Promise<ScaffoldCommand | null> {
+  async getCommand(name: string): Promise<ScaffoldCommand | null> {
     await this.initPromise;
     
     return new Promise((resolve, reject) => {
       this.db.get(
-        'SELECT * FROM commands WHERE type = ? AND name = ?',
-        [type, name],
+        'SELECT * FROM commands WHERE name = ?',
+        [name],
         (err, row) => {
           if (err) {
             reject(err);
@@ -291,58 +288,23 @@ export class ScaffoldDatabase {
     });
   }
 
-  async listCommands(type?: string): Promise<ScaffoldCommand[]> {
+  async listCommands(): Promise<ScaffoldCommand[]> {
     await this.initPromise;
     
     return new Promise((resolve, reject) => {
-      if (type) {
-        this.db.all(
-          'SELECT * FROM commands WHERE type = ? ORDER BY name',
-          [type],
-          (err, rows) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(rows as ScaffoldCommand[]);
-            }
-          }
-        );
-      } else {
-        this.db.all(
-          'SELECT * FROM commands ORDER BY type, name',
-          (err, rows) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(rows as ScaffoldCommand[]);
-            }
-          }
-        );
-      }
-    });
-  }
-
-  async getInitCommand(name: string = 'default'): Promise<ScaffoldCommand | null> {
-    return this.getCommand('init', name);
-  }
-
-  async hasInitCommand(name: string = 'default'): Promise<boolean> {
-    await this.initPromise;
-    
-    return new Promise((resolve, reject) => {
-      this.db.get(
-        'SELECT COUNT(*) as count FROM commands WHERE type = ? AND name = ?',
-        ['init', name],
-        (err, row: any) => {
+      this.db.all(
+        'SELECT * FROM commands ORDER BY name',
+        (err, rows) => {
           if (err) {
             reject(err);
           } else {
-            resolve(row.count > 0);
+            resolve(rows as ScaffoldCommand[]);
           }
         }
       );
     });
   }
+
 
   close(): void {
     this.db.close();

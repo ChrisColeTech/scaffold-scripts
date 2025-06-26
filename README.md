@@ -1,6 +1,6 @@
 # Scaffold Scripts CLI
 
-A production-ready CLI tool for managing and executing your own scaffold scripts with multi-script storage, cross-platform compatibility, and intelligent script conversion.
+Simple CLI tool for managing and running your own scripts. Add any script, run it anywhere.
 
 ## 🚀 Quick Install
 
@@ -14,420 +14,502 @@ curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main
 irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/install.ps1 | iex
 ```
 
-### Manual Installation
+## ✨ Simple Commands
+
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `scaffold my-script` | - | Run a script |
+| `scaffold add my-script /path` | `-a` | Add a script |
+| `scaffold update my-script /path` | `-u` | Update a script |
+| `scaffold remove my-script` | `-r` | Remove a script |
+| `scaffold list` | `-l` | List all scripts |
+| `scaffold -v my-script` | - | View script details |
+
+That's it. No complexity, no types, just scripts.
+
+## 🔄 The Workflow (Crystal Clear)
+
+1. **Copy prompt** → Paste into AI (ChatGPT, Claude, etc.)
+2. **Copy AI's script** → Save to file on your computer  
+3. **Add to scaffold** → `scaffold add script-name file.sh`
+4. **Run anywhere** → `scaffold script-name`
+
 ```bash
-git clone https://github.com/ChrisColeTech/scaffold-scripts.git
-cd scaffold-scripts
-npm install
-npm run build
-npm install -g .
+# Example: AI gives you a React setup script
+# You save it to: react-setup.sh
+# Then:
+scaffold add react-setup react-setup.sh
+scaffold react-setup my-new-project
 ```
 
-## ✨ Features
+## 🤖 Copy These AI Prompts
 
-- 🗄️ **Multi-Script Storage**: Stores original, Windows, Unix, and cross-platform versions of your scripts
-- 🔄 **Intelligent Conversion**: Automatic script conversion between Shell, PowerShell, Batch, Python, and Node.js
-- 🎯 **Platform Detection**: Smart detection of script type and platform compatibility
-- 🔒 **Production Security**: Comprehensive script validation and security scanning
-- ⚡ **Smart Execution**: Uses best platform-specific version automatically
-- 📋 **Clean Interface**: No bloated defaults - add your own scripts
+**Here are battle-tested prompts you can copy-paste to get AI to write production-ready scripts:**
 
-## 📖 Usage
+### Workflow 1: React Project Setup
 
-### Command Reference
+**Copy this exact prompt:**
+```
+Write a bash script that sets up a React TypeScript project with the following requirements:
 
-| Command | Description |
-|---------|-------------|
-| **Main Options** |
-| `-f, --frontend <name>` | Run frontend scaffold script |
-| `-b, --backend <name>` | Run backend scaffold script |
-| `-i, --init [name]` | Run init script (see "First or Default" logic below) |
-| `-v, --view` | View script details instead of executing |
-| **CRUD Operations** |
-| `add <type> <name> <path>` (alias: `-a`) | Add new script |
-| `update <type> <name> <path>` (alias: `-u`) | Update existing script |
-| `remove <type> <name>` (alias: `-r`) | Remove script |
-| `list [type]` (alias: `-l`) | List all scripts |
-| **Add/Update Options** |
-| `-p, --platform <platform>` | Target platform (all/windows/unix) |
-| `--strict` | Use strict validation |
-| `--no-validate` | Skip validation (dangerous) |
-| **List Options** |
-| `-t, --type <type>` | Filter by type (frontend/backend/init) |
-| `-d, --detailed` | Show detailed information in list |
+1. Use Vite with react-ts template
+2. Install these exact packages: tailwindcss postcss autoprefixer react-router-dom @tanstack/react-query zustand
+3. Install dev dependencies: prettier eslint-config-prettier @types/node
+4. Run tailwindcss init with PostCSS
+5. Create folder structure: src/components src/hooks src/utils src/stores src/types
+6. Create .prettierrc with: {"semi": true, "singleQuote": true, "tabWidth": 2}
+7. Create basic tailwind.config.js that scans src/**/*.{js,ts,jsx,tsx}
+8. Update src/index.css to include tailwind directives
+9. Script should accept project name as $1 argument
+10. Add error handling - exit if any command fails
+11. Print progress messages for each step
+12. End with success message showing next steps
 
-### Basic Scaffolding
-
-```bash
-# Frontend scaffolding (you add your own scripts)
-scaffold -f my-react-script     # Run your custom React script
-scaffold -v -f my-react-script  # View script details
-
-# Backend scaffolding (you add your own scripts)  
-scaffold -b my-api-script       # Run your custom API script
-scaffold -v -b my-api-script    # View script details
-
-# Initialization (you add your own scripts)
-scaffold -i                     # Run using "First or Default" logic
-scaffold -i my-setup           # Run named init script
-scaffold -v -i my-setup        # View init script details
+Make the script production-ready with proper error handling.
 ```
 
-### "First or Default" Init Logic
-
-When you run `scaffold -i` with no script name:
-
-1. **No init scripts** → Shows helpful error with examples
-2. **Only one init script** → Runs it automatically
-3. **Multiple scripts + "default" exists** → Runs the "default" script  
-4. **Multiple scripts + no "default"** → Shows list, asks you to specify
-
+**Step 2: Save AI's response to a file**
 ```bash
-# Examples of the logic in action:
-scaffold -i                         # No scripts: shows error
-scaffold add init setup setup.sh    # Add first script
-scaffold -i                         # One script: runs "setup" automatically
+# IMPORTANT: Copy AI's response and save it to a file
+# AI will give you a script - copy the ENTIRE script and save it:
 
-scaffold add init project proj.sh   # Add second script  
-scaffold -i                         # Multiple, no default: shows list
+nano react-setup.sh
+# or
+code react-setup.sh
+# or
+vim react-setup.sh
 
-scaffold add init default def.sh    # Add "default" script
-scaffold -i                         # Multiple with default: runs "default"
+# Paste AI's complete script, then save the file
+# Make it executable:
+chmod +x react-setup.sh
 ```
 
-### Managing Your Scripts
-
-#### Add Your Scripts
+**Step 3: Add to scaffold**
 ```bash
-# Add scripts using command or flag syntax
-scaffold add frontend my-react /path/to/react-setup.sh
-scaffold -a backend my-api /path/to/api-setup.js
-scaffold -a init my-project /path/to/project-init.py
-
-# With platform targeting
-scaffold add frontend my-vue /path/to/vue-setup.sh -p unix
-scaffold -a backend my-express /path/to/express-setup.js -p all
+# Add the file you just created (command or alias):
+scaffold add react-setup react-setup.sh
+# or use alias:
+scaffold -a react-setup react-setup.sh
 ```
 
-#### Update Your Scripts
+**Step 4: Use it**
 ```bash
-# Update scripts using command or flag syntax
-scaffold update frontend my-react /path/to/updated-react.sh
-scaffold -u backend my-api /path/to/new-api.js
-scaffold -u init my-project /path/to/improved-init.py
-
-# With strict validation
-scaffold update frontend my-vue /path/to/new-vue.sh --strict
+scaffold react-setup my-awesome-app
 ```
 
-#### Remove Scripts
-```bash
-# Remove scripts using command or flag syntax
-scaffold remove frontend my-react
-scaffold -r backend my-api
-scaffold -r init my-project
+### Workflow 2: Express API Setup
+
+**Copy this exact prompt:**
+```
+Write a Node.js script that creates a production-ready Express TypeScript API:
+
+1. Create project directory and cd into it
+2. Run npm init -y
+3. Install: express helmet cors express-rate-limit dotenv express-validator morgan bcryptjs jsonwebtoken
+4. Install dev deps: typescript @types/node @types/express @types/bcryptjs @types/jsonwebtoken nodemon ts-node
+5. Create tsconfig.json with strict settings and outDir: "./dist"
+6. Create folder structure: src/routes src/middleware src/models src/controllers src/utils
+7. Create src/app.ts with Express app, all security middleware configured, JSON parsing, and /health endpoint
+8. Create src/server.ts that imports app and starts server on process.env.PORT || 3000
+9. Create .env file with PORT=3000, NODE_ENV=development, JWT_SECRET=your-secret-here
+10. Add npm scripts: "dev": "nodemon src/server.ts", "build": "tsc", "start": "node dist/server.js"
+11. Create basic error handling middleware
+12. Script accepts API name as first argument
+13. Add comprehensive error handling and progress logging
+14. Include .gitignore for node_modules, .env, dist/
+
+Make it production-ready with security best practices.
 ```
 
-#### List & View Scripts
+**Step 2: Save AI's response to a file**
 ```bash
-# List all scripts (command or flag syntax)
+# IMPORTANT: AI will generate a Node.js script
+# Copy AI's complete response and save it to a file:
+
+nano api-setup.js
+# Paste AI's entire script, save and exit
+
+# Make it executable:
+chmod +x api-setup.js
+
+# Add to scaffold (command or alias):
+scaffold add api-setup api-setup.js
+# or: scaffold -a api-setup api-setup.js
+```
+
+**Step 3: Use it**
+```bash
+scaffold api-setup my-api
+```
+
+### Workflow 3: Database Setup with Docker
+
+**Copy this exact prompt:**
+```
+Write a bash script that sets up PostgreSQL with Docker Compose:
+
+1. Script accepts database name as $1 argument
+2. Create docker-compose.yml with:
+   - PostgreSQL 15 image
+   - Custom database name from argument
+   - Username: developer, Password: devpassword
+   - Port 5432:5432
+   - Volume for data persistence: postgres_data
+   - Health check with pg_isready
+   - Auto-restart policy
+3. Create init.sql with:
+   - Enable uuid-ossp extension
+   - Create users table with id (UUID primary key), email (unique), password_hash, created_at, updated_at
+   - Create indexes on email and created_at
+   - Insert sample admin user
+4. Create .env file with database credentials
+5. Run docker-compose up -d
+6. Wait for health check to pass
+7. Display connection info and sample commands
+8. Add error handling for Docker not running
+9. Check if port 5432 is already in use
+
+Include detailed logging and error messages.
+```
+
+**Step 2: Save AI's response to a file**
+```bash
+# IMPORTANT: AI will generate a bash script
+# Copy AI's complete response and save it:
+
+nano postgres-setup.sh
+# Paste AI's entire script, save and exit
+chmod +x postgres-setup.sh
+
+# Add to scaffold:
+scaffold add postgres-setup postgres-setup.sh
+```
+
+**Step 3: Use it**
+```bash
+scaffold postgres-setup my-project-db
+```
+
+### Workflow 4: Deployment Script
+
+**Copy this exact prompt:**
+```
+Write a bash deployment script for a full-stack application:
+
+1. Accept environment argument: dev, staging, or prod
+2. Set registry URL and cluster config based on environment
+3. Run these steps with detailed logging:
+   - Validate environment argument
+   - Check for required tools: docker, kubectl, git
+   - Run frontend tests: cd frontend && npm test
+   - Run backend tests: cd backend && npm test
+   - Build frontend: npm run build and create Docker image
+   - Build backend: npm run build and create Docker image
+   - Tag images with git commit hash and environment
+   - Push both images to container registry
+   - Update Kubernetes manifests with new image tags
+   - Apply Kubernetes configs: kubectl apply -f k8s/
+   - Wait for frontend deployment rollout
+   - Wait for backend deployment rollout
+   - Run health checks on deployed services
+   - Display deployment URLs and status
+4. Add rollback function if deployment fails
+5. Add comprehensive error handling and logging
+6. Support dry-run mode with --dry-run flag
+
+Include progress indicators and colored output.
+```
+
+**Step 2: Save AI's response to a file**
+```bash
+# IMPORTANT: AI will generate a deployment script
+# Copy AI's complete response and save it:
+
+nano deploy-script.sh
+# Paste AI's entire script, save and exit
+chmod +x deploy-script.sh
+
+# Add to scaffold:
+scaffold add deploy deploy-script.sh
+```
+
+**Step 3: Use it**
+```bash
+scaffold deploy staging  # Deploy to staging
+```
+
+### Workflow 5: Development Environment
+
+**Copy this exact prompt:**
+```
+Write a bash script that sets up a complete development environment:
+
+1. Check OS (macOS, Linux, Windows WSL) and install tools accordingly:
+   - Node.js 18+ (via nvm if not installed)
+   - Docker and Docker Compose
+   - Git (if not installed)
+   - VSCode command line tools
+2. Clone these repositories to ~/code/ directory:
+   - Frontend: git@github.com:company/frontend.git
+   - Backend: git@github.com:company/backend.git
+   - Shared: git@github.com:company/shared-components.git
+3. For each repo:
+   - Run npm install
+   - Copy .env.example to .env
+   - Set up git hooks with husky
+4. Install global npm packages: typescript, nodemon, concurrently
+5. Install VSCode extensions:
+   - ms-vscode.vscode-typescript-next
+   - esbenp.prettier-vscode
+   - bradlc.vscode-tailwindcss
+6. Create workspace file for VSCode with all 3 repos
+7. Start development services:
+   - Database with Docker Compose
+   - Backend in watch mode
+   - Frontend in dev mode
+8. Display access URLs and next steps
+9. Add checks for SSH keys and GitHub access
+10. Handle errors gracefully with helpful messages
+
+Make it idempotent - safe to run multiple times.
+```
+
+**Step 2: Save AI's response to a file**
+```bash
+# IMPORTANT: AI will generate an environment setup script
+# Copy AI's complete response and save it:
+
+nano setup-dev.sh
+# Paste AI's entire script, save and exit
+chmod +x setup-dev.sh
+
+# Add to scaffold:
+scaffold add dev-setup setup-dev.sh
+```
+
+**Step 3: Use it**
+```bash
+scaffold dev-setup  # Complete environment in one command
+```
+
+## 🔧 Management Commands
+
+```bash
+# List all your scripts (command or alias)
 scaffold list
 scaffold -l
 
-# List by type
-scaffold list -t frontend
-scaffold -l -t backend
+# See script details
+scaffold -v my-script
 
-# List with details
-scaffold list -d
-scaffold -l -d
+# Update a script (command or alias)
+scaffold update my-script /path/to/new-script.sh
+scaffold -u my-script /path/to/new-script.sh
 
-# View specific script with all versions
-scaffold -v -f my-react        # View frontend script
-scaffold -v -b my-api          # View backend script  
-scaffold -v -i my-project      # View init script
+# Remove a script (command or alias)  
+scaffold remove my-script
+scaffold -r my-script
 ```
 
-## 🛠️ Your Scripts
+## 🎯 More Production Prompts
 
-The CLI starts empty - **you add your own scripts**:
+### CI/CD Pipeline Setup
+```
+Write a bash script that sets up GitHub Actions workflow:
 
+1. Create .github/workflows/ci.yml with:
+   - Trigger on push to main and pull requests
+   - Node.js matrix testing (16, 18, 20)
+   - Install dependencies with cache
+   - Run linting with eslint
+   - Run tests with coverage
+   - Build application
+   - Upload coverage to Codecov
+2. Create .github/workflows/deploy.yml with:
+   - Trigger on release tag
+   - Build Docker images
+   - Push to GitHub Container Registry
+   - Deploy to production via SSH
+3. Add scripts/ci-setup.sh that developers run locally
+4. Include status badges for README
+5. Add comprehensive error handling
+6. Support for monorepo with multiple packages
+
+Make it follow GitHub Actions best practices.
+```
+
+### Testing Setup
+```
+Write a script that sets up comprehensive testing for a TypeScript project:
+
+1. Install test dependencies: jest, @types/jest, ts-jest, @testing-library/react, @testing-library/jest-dom
+2. Create jest.config.js with TypeScript support and coverage thresholds
+3. Create test setup files and utilities
+4. Add test scripts to package.json: test, test:watch, test:coverage, test:ci
+5. Create example unit tests, integration tests, and e2e tests
+6. Set up MSW for API mocking
+7. Configure test database setup/teardown
+8. Add pre-commit hook to run tests
+9. Create testing documentation in docs/testing.md
+
+Include best practices for React Testing Library.
+```
+
+### Security Audit Script
+```
+Write a security audit script for a Node.js application:
+
+1. Run npm audit and fail if high vulnerabilities
+2. Check for common security issues:
+   - Hardcoded secrets in code
+   - Weak dependencies
+   - Insecure environment configurations
+3. Scan Dockerfile for security best practices
+4. Check for exposed sensitive files (.env, keys)
+5. Validate HTTPS configuration
+6. Check dependency licenses for compliance
+7. Run security linting with eslint-plugin-security
+8. Generate security report with recommendations
+9. Integration with security scanning tools
+
+Output detailed report with severity levels and fix suggestions.
+```
+
+## 💡 Pro Tips
+
+1. **Copy exact prompts** - Use the prompts above word-for-word for best results
+2. **Test AI output** - Always test the generated script before adding to scaffold
+3. **Use descriptive names** - `react-setup`, `deploy-prod`, `security-audit`
+4. **One script, one job** - Keep scripts focused on single tasks
+5. **Add error handling** - Always request error handling in your prompts
+6. **Share with team** - Export/import scripts or share the database file
+
+## 🎯 Real Examples from Users
+
+**Frontend Developer:**
 ```bash
-# Check available scripts
-scaffold -l
-# Output: "No commands available."
+# Adding scripts (using aliases for speed)
+scaffold -a react-ts react-typescript-setup.sh
+scaffold -a vue-app vue-setup.sh  
+scaffold -a next-app nextjs-setup.sh
 
-# Add your first script
-scaffold add frontend my-setup ./my-frontend-setup.sh
-# Now you have: scaffold -f my-setup
+# Running scripts
+scaffold react-ts my-new-project
+scaffold list  # or: scaffold -l
 ```
 
-### Script Types Supported
-
-| Type | Description | Example Use |
-|------|-------------|-------------|
-| **Frontend** | Client-side application setup | React, Vue, Angular, Svelte setup scripts |
-| **Backend** | Server-side application setup | API, database, microservice setup scripts |
-| **Init** | Project initialization | Git setup, CI/CD, workspace initialization |
-
-## 🔧 Script Examples
-
-### Shell Script Example (Unix/Linux/macOS)
+**DevOps Engineer:**
 ```bash
-#!/bin/bash
-echo "Setting up my custom React project..."
-npx create-react-app my-app --template typescript
-cd my-app
-npm install my-favorite-packages
-mkdir -p src/components src/hooks
-echo "My React setup complete!"
+# Adding deployment scripts
+scaffold -a k8s-deploy kubernetes-deploy.sh
+scaffold -a docker-build build-images.sh
+scaffold -a aws-setup setup-aws-resources.sh
+
+# Running deployments
+scaffold k8s-deploy production
+scaffold -v k8s-deploy  # View script details
 ```
 
-### PowerShell Script Example (Windows)
-```powershell
-# My custom API setup
-Write-Host "Setting up my API..." -ForegroundColor Blue
-dotnet new webapi -o MyApi
-Set-Location MyApi
-dotnet add package MyFavoritePackage
-New-Item -ItemType Directory -Force -Path "Controllers","Services"
-Write-Host "My API setup complete!" -ForegroundColor Green
-```
-
-### Python Script Example (Cross-platform)
-```python
-#!/usr/bin/env python3
-import os
-import subprocess
-
-print("Setting up my Python project...")
-os.makedirs("my_project/src", exist_ok=True)
-os.makedirs("my_project/tests", exist_ok=True)
-
-with open("my_project/requirements.txt", "w") as f:
-    f.write("fastapi\nuvicorn\npydantic\n")
-
-print("My Python project setup complete!")
-```
-
-### Node.js Script Example (Cross-platform)
-```javascript
-#!/usr/bin/env node
-const fs = require('fs');
-const { execSync } = require('child_process');
-
-console.log('Setting up my Node.js project...');
-execSync('npm init -y');
-execSync('npm install express helmet cors');
-fs.mkdirSync('src/routes', { recursive: true });
-fs.writeFileSync('src/app.js', 'console.log("My app started");');
-console.log('My Node.js setup complete!');
-```
-
-## 🔒 Security & Validation
-
-### Automatic Validation
-- **Dangerous command detection** (`rm -rf`, `del /s`, etc.)
-- **Network access warnings** (`curl`, `wget`)
-- **System modification alerts** (`sudo`, `runas`)
-- **Path traversal prevention** (`../`, `..\\`)
-- **Script sanitization** (control characters, excessive whitespace)
-
-### Validation Modes
+**Full-Stack Developer:**
 ```bash
-# Default validation (recommended)
-scaffold -a frontend my-script /path/to/script.sh
+# Quick setup with aliases
+scaffold -a fullstack full-project-setup.sh
+scaffold -a api-gen generate-api.py
+scaffold -a db-migrate migrate-database.sh
 
-# Strict validation (extra security)
-scaffold -a frontend my-script /path/to/script.sh --strict
-
-# Skip validation (use with caution)
-scaffold -a frontend my-script /path/to/script.sh --no-validate
+# Daily workflow
+scaffold fullstack my-startup-idea
+scaffold -u api-gen new-api-generator.py  # Update script
+scaffold -r old-script  # Remove old script
 ```
 
-## 🌍 Cross-Platform Support
+## 🚀 Why This Approach Works
 
-Your scripts are automatically converted for all platforms:
+1. **AI writes better scripts** - More optimized, handles edge cases
+2. **No frontend/backend confusion** - Everything is just a script
+3. **Cross-platform automatically** - Scaffold handles Windows/Unix conversion
+4. **Version controlled** - Scripts are stored and managed
+5. **Team collaboration** - Share scripts easily
+6. **Zero learning curve** - Add script, run script, done
 
-### Automatic Conversion
+## 📦 Installation Details
 
-| Original (Shell) | Windows (PowerShell) | Cross-Platform |
-|------------------|---------------------|----------------|
-| `mkdir -p dir` | `New-Item -ItemType Directory -Force -Path "dir"` | `# Create directory: dir` |
-| `touch file.txt` | `New-Item -ItemType File -Force -Path "file.txt"` | `# Create file: file.txt` |
-| `echo "Hello"` | `Write-Output "Hello"` | `# Output: Hello` |
-| `export VAR=value` | `$env:VAR="value"` | `# Set environment variable` |
+The CLI stores scripts in `~/.scaffold-scripts/` and automatically:
+- **Limited conversion** between platforms (basic commands only)
+- Validates script security  
+- Handles different script types (bash, PowerShell, Python, Node.js)
+- Manages versions and updates
 
-### View All Versions
+### Platform Conversion Reality Check
+
+**What converts automatically:**
+- Basic file operations: `mkdir`, `rm`, `cp`, `mv`
+- Simple output: `echo`, `cat`
+- Basic conditionals and loops
+
+**What doesn't convert (most things):**
+- Complex shell commands (`grep`, `sed`, `awk`, `curl`)
+- Package managers (`apt`, `brew`, `choco`)
+- System-specific commands
+- Advanced scripting patterns
+
+**Recommendation:** Ask AI to generate separate scripts for each platform:
 ```bash
-scaffold -v -f my-script
-# Shows:
-# 🔸 Original (unix, shell)
-# 🔸 Windows Version (PowerShell converted)
-# 🔸 Unix Version (optimized)
-# 🔸 Cross-Platform Version (platform-agnostic)
-# 🎯 Best for Current Platform (automatically selected)
-```
-
-## 📁 Database Storage
-
-Your scripts are stored in `~/.scaffold-scripts/commands.db`:
-
-```sql
-CREATE TABLE commands (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  type TEXT CHECK (type IN ('frontend', 'backend', 'init')),
-  name TEXT NOT NULL,
-  
-  -- Multi-script storage
-  script_original TEXT NOT NULL,
-  script_windows TEXT,
-  script_unix TEXT,
-  script_cross_platform TEXT,
-  
-  -- Script metadata
-  original_platform TEXT CHECK (original_platform IN ('windows', 'unix', 'cross-platform')),
-  script_type TEXT CHECK (script_type IN ('shell', 'powershell', 'python', 'nodejs', 'batch', 'mixed')),
-  
-  platform TEXT DEFAULT 'all',
-  alias TEXT,
-  description TEXT,
-  createdAt TEXT,
-  updatedAt TEXT,
-  UNIQUE(type, name)
-);
-```
-
-## 🎯 Advanced Features
-
-### Platform Compatibility Analysis
-```bash
-scaffold -v -b my-powershell-script
-# Shows platform compatibility warnings:
-# ⚠️  Platform Compatibility:
-#   • PowerShell scripts may not be available on this platform
-# 💡 Recommendations:
-#   • Install PowerShell Core or use the converted Unix version
-```
-
-### Script Processing Pipeline
-1. **Validation**: Security scanning and syntax checking
-2. **Platform Detection**: Automatic detection of script type and origin
-3. **Cross-Platform Generation**: Creates Windows, Unix, and agnostic versions
-4. **Storage**: Saves all versions with metadata
-5. **Execution**: Uses best version for current platform
-
-## 🚚 Installation
-
-### Manual Installation
-
-```bash
-# Clone repository
-git clone https://github.com/ChrisColeTech/scaffold-scripts.git
-cd scaffold-scripts
-
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-
-# Install globally
-npm install -g .
-```
-
-### Local Development
-
-```bash
-# Clone and install locally
-git clone https://github.com/ChrisColeTech/scaffold-scripts.git
-cd scaffold-scripts
-
-# Use the local installer script
-./install-local.sh
-```
-
-## 📋 Requirements
-
-- **Node.js** 18+
-- **npm** 9+
-- Platform-specific tools based on your scripts:
-  - Git (if your scripts use git)
-  - .NET SDK (if your scripts use dotnet)
-  - Python (if your scripts use python)
-  - PowerShell Core (for cross-platform PowerShell)
-
-## 🧪 Testing Your Scripts
-
-### Test Script Addition
-```bash
-# Create a test script
-echo 'echo "Hello World"' > test-script.sh
-
-# Add it
-scaffold -a init hello-test test-script.sh
-
-# View it
-scaffold -v -i hello-test
-
-# Run it
-scaffold -i hello-test
-
-# Remove it
-scaffold -r init hello-test
-```
-
-## 🗑️ Uninstallation
-
-```bash
-# Remove CLI
-npm uninstall -g scaffold-scripts
-
-# Remove your scripts and database
-rm -rf ~/.scaffold-scripts        # Unix/macOS
-Remove-Item -Recurse -Force ~/.scaffold-scripts      # Windows PowerShell
+# Ask AI for both versions
+scaffold add setup-unix setup-unix.sh      # For macOS/Linux  
+scaffold add setup-win setup-win.ps1       # For Windows
 ```
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+2. Create feature branch
+3. Test your changes
+4. Submit pull request
+
+## 📤 Exporting Your Scripts
+
+You can export your scripts as individual files anytime:
+
+```bash
+scaffold export ./my-scripts
+```
+
+This creates:
+- Individual `.sh` files (executable and runnable)
+- README with usage instructions
+- Metadata headers in each script
+
+## 🗑️ Uninstalling
+
+Simple interactive uninstall:
+
+```bash
+scaffold uninstall
+```
+
+**The command will ask you:**
+1. **Export scripts?** - Save scripts as files you can run directly
+2. **Keep data?** - Only if you didn't export, preserve database in `~/.scaffold-scripts`
+
+Then it uninstalls immediately. Simple!
+
+If the built-in command doesn't work, use these alternatives:
+
+### Unix/Linux/macOS
+```bash
+curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/uninstall.sh | bash
+```
+
+### Windows PowerShell
+```powershell
+irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/uninstall.ps1 | iex
+```
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see LICENSE file.
 
-## 🆘 Support
+---
 
-- 📖 [Documentation](https://github.com/ChrisColeTech/scaffold-scripts)
-- 🐛 [Issues](https://github.com/ChrisColeTech/scaffold-scripts/issues)
-- 💬 [Discussions](https://github.com/ChrisColeTech/scaffold-scripts/discussions)
-
-## 📚 Real-World Workflow
-
-```bash
-# Start with empty CLI
-scaffold -l
-# Output: "No commands available."
-
-# Add your team's React setup
-scaffold -a frontend team-react ./team-react-setup.sh
-
-# Add your API boilerplate
-scaffold -a backend team-api ./team-api-setup.js
-
-# Add your project initialization
-scaffold -a init team-project ./team-project-init.py
-
-# Now your team can use them
-scaffold -i team-project     # Initialize project
-scaffold -f team-react       # Add frontend
-scaffold -b team-api         # Add backend
-
-# Share scripts by committing the database or exporting/importing individual scripts
-```
-
-**This is YOUR scaffold system - add the scripts YOU need.**
+**Remember: Always start with AI. Ask AI to write your scripts, then add them to scaffold. This gives you optimized, production-ready scripts every time.**
