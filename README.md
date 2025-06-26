@@ -16,39 +16,42 @@ irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/instal
 
 ## ✨ Simple Commands
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `scaffold my-script` | - | Run a script |
-| `scaffold add my-script /path` | `-a` | Add a script |
-| `scaffold update my-script /path` | `-u` | Update a script |
-| `scaffold remove my-script` | `-r` | Remove a script |
-| `scaffold list` | `-l` | List all scripts |
-| `scaffold -v my-script` | - | View script details |
+| Command | Alias | Usage Examples |
+|---------|-------|----------------|
+| `scaffold my-script` | `ss my-script` | `scaffold setup-project`<br>`ss setup-project` |
+| `scaffold add name /path` | `scaffold -a` / `ss -a` | `scaffold add setup-project script.sh`<br>`ss -a setup-project script.sh` |
+| `scaffold update name /path` | `scaffold -u` / `ss -u` | `scaffold update setup-project new-script.sh`<br>`ss -u setup-project new-script.sh` |
+| `scaffold remove name` | `scaffold -r` / `ss -r` | `scaffold remove setup-project`<br>`ss -r setup-project` |
+| `scaffold list` | `scaffold -l` / `ss -l` | `scaffold list`<br>`ss -l` |
+| `scaffold -v name` | `ss -v` | `scaffold -v setup-project`<br>`ss -v setup-project` |
 
-That's it. No complexity, no types, just scripts.
+**Pro tip:** Use `ss` for speed! Same commands, less typing.
 
 ## 🔄 The Workflow (Crystal Clear)
 
-1. **Copy prompt** → Paste into AI (ChatGPT, Claude, etc.)
-2. **Copy AI's script** → Save to file on your computer  
-3. **Add to scaffold** → `scaffold add script-name file.sh`
-4. **Run anywhere** → `scaffold script-name`
+1. **Ask AI** → Use any prompt to describe what you want (see examples below)
+2. **Save script** → Copy AI's response to a file on your computer  
+3. **Add to scaffold** → `scaffold add script-name file.sh` or `ss add script-name file.sh`
+4. **Run anywhere** → `scaffold script-name` or `ss script-name`
 
 ```bash
-# Example: AI gives you a React setup script
-# You save it to: react-setup.sh
+# Example: AI gives you a setup script
+# You save it to: setup.sh
 # Then:
-scaffold add react-setup react-setup.sh
-scaffold react-setup my-new-project
+scaffold add setup setup.sh
+scaffold setup my-project
+# or use shorthand:
+ss add setup setup.sh
+ss setup my-project
 ```
 
-## 🤖 Copy These AI Prompts
+## 🤖 Example AI Prompts
 
-**Here are battle-tested prompts you can copy-paste to get AI to write production-ready scripts:**
+**Here are example prompts to get you started. Customize them for your needs:**
 
-### Workflow 1: React Project Setup
+### Example 1: Project Setup Script
 
-**Copy this exact prompt:**
+**Example prompt (customize as needed):**
 ```
 Write a bash script that sets up a React TypeScript project with the following requirements:
 
@@ -86,20 +89,23 @@ chmod +x react-setup.sh
 
 **Step 3: Add to scaffold**
 ```bash
-# Add the file you just created (command or alias):
-scaffold add react-setup react-setup.sh
-# or use alias:
-scaffold -a react-setup react-setup.sh
+# Add the file you just created:
+scaffold add project-setup project-setup.sh
+# or use shortcuts:
+scaffold -a project-setup project-setup.sh
+ss -a project-setup project-setup.sh
 ```
 
 **Step 4: Use it**
 ```bash
-scaffold react-setup my-awesome-app
+scaffold project-setup my-awesome-app
+# or use shorthand:
+ss project-setup my-awesome-app
 ```
 
-### Workflow 2: Express API Setup
+### Example 2: API Setup Script
 
-**Copy this exact prompt:**
+**Example prompt (customize as needed):**
 ```
 Write a Node.js script that creates a production-ready Express TypeScript API:
 
@@ -132,19 +138,21 @@ nano api-setup.js
 # Make it executable:
 chmod +x api-setup.js
 
-# Add to scaffold (command or alias):
+# Add to scaffold:
 scaffold add api-setup api-setup.js
-# or: scaffold -a api-setup api-setup.js
+# or use shortcuts:
+ss -a api-setup api-setup.js
 ```
 
 **Step 3: Use it**
 ```bash
 scaffold api-setup my-api
+# or: ss api-setup my-api
 ```
 
-### Workflow 3: Database Setup with Docker
+### Example 3: Database Setup Script
 
-**Copy this exact prompt:**
+**Example prompt (customize as needed):**
 ```
 Write a bash script that sets up PostgreSQL with Docker Compose:
 
@@ -295,20 +303,24 @@ scaffold dev-setup  # Complete environment in one command
 ## 🔧 Management Commands
 
 ```bash
-# List all your scripts (command or alias)
+# List all your scripts
 scaffold list
 scaffold -l
+ss -l
 
 # See script details
 scaffold -v my-script
+ss -v my-script
 
-# Update a script (command or alias)
+# Update a script
 scaffold update my-script /path/to/new-script.sh
 scaffold -u my-script /path/to/new-script.sh
+ss -u my-script /path/to/new-script.sh
 
-# Remove a script (command or alias)  
+# Remove a script
 scaffold remove my-script
 scaffold -r my-script
+ss -r my-script
 ```
 
 ## 🎯 More Production Prompts
@@ -377,50 +389,51 @@ Output detailed report with severity levels and fix suggestions.
 
 ## 💡 Pro Tips
 
-1. **Copy exact prompts** - Use the prompts above word-for-word for best results
+1. **Customize prompts** - Use our examples as starting points, then adapt for your needs
 2. **Test AI output** - Always test the generated script before adding to scaffold
-3. **Use descriptive names** - `react-setup`, `deploy-prod`, `security-audit`
+3. **Use descriptive names** - `web-setup`, `backup-files`, `deploy-app`
 4. **One script, one job** - Keep scripts focused on single tasks
 5. **Add error handling** - Always request error handling in your prompts
 6. **Share with team** - Export/import scripts or share the database file
+7. **Use shortcuts** - `ss` saves typing, same as `scaffold`
 
 ## 🎯 Real Examples from Users
 
-**Frontend Developer:**
+**Student working on projects:**
 ```bash
-# Adding scripts (using aliases for speed)
-scaffold -a react-ts react-typescript-setup.sh
-scaffold -a vue-app vue-setup.sh  
-scaffold -a next-app nextjs-setup.sh
+# Adding scripts (using shortcuts for speed)
+scaffold -a web-setup web-project-setup.sh
+ss -a homework homework-template.sh  
+ss -a deploy deploy-to-server.sh
 
 # Running scripts
-scaffold react-ts my-new-project
-scaffold list  # or: scaffold -l
+scaffold web-setup my-assignment
+ss list  # or: scaffold -l
 ```
 
-**DevOps Engineer:**
+**Someone automating daily tasks:**
 ```bash
-# Adding deployment scripts
-scaffold -a k8s-deploy kubernetes-deploy.sh
-scaffold -a docker-build build-images.sh
-scaffold -a aws-setup setup-aws-resources.sh
+# Adding automation scripts
+ss -a backup backup-files.sh
+ss -a clean cleanup-downloads.sh
+ss -a update update-system.sh
 
-# Running deployments
-scaffold k8s-deploy production
-scaffold -v k8s-deploy  # View script details
+# Running automations
+ss backup
+ss -v backup  # View script details
 ```
 
-**Full-Stack Developer:**
+**Team lead sharing workflows:**
 ```bash
-# Quick setup with aliases
-scaffold -a fullstack full-project-setup.sh
-scaffold -a api-gen generate-api.py
-scaffold -a db-migrate migrate-database.sh
+# Quick setup with shortcuts
+ss -a onboard new-team-member.sh
+ss -a test run-all-tests.py
+ss -a release release-version.sh
 
 # Daily workflow
-scaffold fullstack my-startup-idea
-scaffold -u api-gen new-api-generator.py  # Update script
-scaffold -r old-script  # Remove old script
+ss onboard john-doe
+ss -u test new-test-script.py  # Update script
+ss -r old-workflow  # Remove old script
 ```
 
 ## 🚀 Why This Approach Works

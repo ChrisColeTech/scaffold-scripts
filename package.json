@@ -4,7 +4,8 @@
   "description": "CLI tool for scaffolding frontend and backend projects",
   "main": "dist/index.js",
   "bin": {
-    "scaffold": "./bin/scaffold.js"
+    "scaffold": "./bin/scaffold.js",
+    "ss": "./bin/scaffold.js"
   },
   "scripts": {
     "build": "tsc",
