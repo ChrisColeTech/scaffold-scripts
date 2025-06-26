@@ -1,7 +1,7 @@
 {
   "name": "scaffold-scripts",
   "version": "1.0.0",
-  "description": "CLI tool for scaffolding frontend and backend projects",
+  "description": "Simple CLI tool for managing and running your own scripts. Add any script, run it anywhere.",
   "main": "dist/index.js",
   "bin": {
     "scaffold": "./bin/scaffold.js",
@@ -22,13 +22,16 @@
     "uninstall-global": "npm uninstall -g scaffold-scripts"
   },
   "keywords": [
-    "scaffold",
     "cli",
-    "frontend",
-    "backend",
-    "react",
-    "dotnet",
-    "project-generator"
+    "scripts",
+    "automation",
+    "script-manager",
+    "bash",
+    "powershell",
+    "python",
+    "workflow",
+    "productivity",
+    "developer-tools"
   ],
   "author": "ChrisColeTech",
   "license": "MIT",
