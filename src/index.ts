@@ -2,11 +2,17 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { ScaffoldDatabase, ScaffoldCommand } from './database.js';
 import { ScriptExecutor } from './scriptExecutor.js';
 import { ScriptValidator } from './scriptValidator.js';
 import { ScriptProcessor } from './scriptProcessor.js';
 import { sym } from './symbols.js';
+
+// Get version from package.json
+const packageJsonPath = join(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
 const program = new Command();
 const db = new ScaffoldDatabase();
@@ -17,7 +23,7 @@ const processor = new ScriptProcessor();
 program
   .name('scaffold')
   .description('CLI tool for managing and executing scaffold scripts')
-  .version('1.0.0');
+  .version(packageJson.version);
 
 // Main scaffolding commands
 program
