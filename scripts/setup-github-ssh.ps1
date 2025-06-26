@@ -3,12 +3,20 @@
 
 param()
 
-$Email = "chris@chriscole.tech"
-$SSHDir = "$env:USERPROFILE\.ssh"
-
 Write-Host ""
 Write-Host "=== GitHub SSH Setup ===" -ForegroundColor Blue
 Write-Host ""
+
+# Prompt for email address
+Write-Host "Enter your GitHub email address: " -NoNewline -ForegroundColor Yellow
+$Email = Read-Host
+
+if ([string]::IsNullOrWhiteSpace($Email)) {
+    Write-Host "ERROR: Email address is required." -ForegroundColor Red
+    exit 1
+}
+
+$SSHDir = "$env:USERPROFILE\.ssh"
 
 # Create SSH directory
 if (-not (Test-Path $SSHDir)) {
