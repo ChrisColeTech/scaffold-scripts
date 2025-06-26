@@ -21,9 +21,9 @@ scaffold my-script
 scaffold list
 
 # Speed shortcuts
-sc -a my-script script.sh    # Add quickly
-sc my-script                 # Run quickly
-scripts list                 # Readable version
+scaffold a my-script script.sh    # Add quickly
+scaffold my-script                 # Run quickly
+scripts list                       # Readable version
 ```
 
 ## The Workflow

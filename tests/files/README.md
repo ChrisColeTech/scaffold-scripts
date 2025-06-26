@@ -51,6 +51,6 @@ const fixturePath = TestFixtures.getFixturePath('invalid', 'empty.sh');
 The current test suite uses simplified smoke tests to verify core functionality and alias configuration. The comprehensive file fixtures in this directory are ready for expanded testing when needed. The basic tests verify:
 
 - Core CLI commands work without crashing
-- New alias configuration (`sc` and `scripts`) is properly set up
+- New alias configuration (`scripts`) is properly set up, with `sc` removed to avoid Windows conflicts
 - File type validation rejects binary extensions
 - All supported file types are documented and available as fixtures

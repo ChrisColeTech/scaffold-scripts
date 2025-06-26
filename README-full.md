@@ -18,16 +18,16 @@ irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/script
 
 | Command | Aliases | Description | Usage Example |
 |---------|---------|-------------|---------------|
-| `scaffold` | `sc` / `scripts` | Run a script | `scaffold setup-project` |
-| `scaffold add` | `sc -a` / `scripts add` | Add a script | `scaffold add setup script.sh` |
-| `scaffold update` | `sc -u` / `scripts update` | Update a script | `scaffold update setup new-script.sh` |
-| `scaffold remove` | `sc -r` / `scripts remove` | Remove a script | `scaffold remove setup` |
-| `scaffold list` | `sc -l` / `scripts list` | List all scripts | `scaffold list` |
-| `scaffold -v` | `sc -v` / `scripts -v` | View script details | `scaffold -v setup` |
+| `scaffold` | `scripts` | Run a script | `scaffold setup-project` |
+| `scaffold add` | `scaffold a` / `scripts add` | Add a script | `scaffold add setup script.sh` |
+| `scaffold update` | `scaffold u` / `scripts update` | Update a script | `scaffold update setup new-script.sh` |
+| `scaffold remove` | `scaffold r` / `scripts remove` | Remove a script | `scaffold remove setup` |
+| `scaffold list` | `scaffold l` / `scripts list` | List all scripts | `scaffold list` |
+| `scaffold -v` | `scripts -v` | View script details | `scaffold -v setup` |
 
 **Choose your style:**
 - **Full commands:** `scaffold add`, `scaffold list` - Crystal clear
-- **Speed typing:** `sc -a`, `sc -l` - Fastest option  
+- **Speed typing:** `scaffold a`, `scaffold l` - Faster option  
 - **Readable:** `scripts add`, `scripts list` - Self-explanatory
 
 ## 🔄 The Workflow (Crystal Clear)
@@ -46,11 +46,11 @@ scaffold setup my-project
 **Speed version:**
 ```bash
 # Same workflow, faster typing
-sc -a setup setup.sh
-sc setup my-project
+scaffold a setup setup.sh
+scaffold setup my-project
 ```
 
-**What's happening in this complete example:** This shows the same workflow using two different command styles. In the first version, `scaffold` is the full command name for maximum clarity, `add` is the subcommand that registers scripts, `setup` becomes your custom script name, and `setup.sh` is your actual file. Then `scaffold setup my-project` runs that registered script with "my-project" as an argument. The speed version uses `sc` (the shortest alias for "scaffold") and `-a` (short flag for "add") to do exactly the same thing but with much less typing - perfect when you're working fast and frequently.
+**What's happening in this complete example:** This shows the same workflow using two different command styles. In the first version, `scaffold` is the full command name for maximum clarity, `add` is the subcommand that registers scripts, `setup` becomes your custom script name, and `setup.sh` is your actual file. Then `scaffold setup my-project` runs that registered script with "my-project" as an argument. The speed version uses `scaffold a` (short alias for "add") to do exactly the same thing but with less typing - perfect when you're working fast and frequently.
 
 ## 🤖 Example AI Prompts
 
@@ -399,23 +399,23 @@ Output detailed report with severity levels and fix suggestions.
 4. **One script, one job** - Keep scripts focused on single tasks
 5. **Add error handling** - Always request error handling in your prompts
 6. **Share with team** - Export/import scripts or share the database file
-7. **Use shortcuts** - `sc` or `scripts` saves typing, same as `scaffold`
+7. **Use shortcuts** - `scripts` saves typing, same as `scaffold`
 
 ## 🎯 Real Examples from Users
 
 **Student working on projects:**
 ```bash
 # Speed workflow with shortcuts
-sc -a web-setup web-project-setup.sh
-sc -a homework homework-template.sh  
-sc -a deploy deploy-to-server.sh
+scaffold a web-setup web-project-setup.sh
+scaffold a homework homework-template.sh  
+scaffold a deploy deploy-to-server.sh
 
 # Running scripts
-sc web-setup my-assignment
-sc -l  # list all scripts
+scaffold web-setup my-assignment
+scaffold l  # list all scripts
 ```
 
-**What's happening in this complete example:** This shows a student's rapid workflow using the shortest alias `sc` (short for "scaffold") with flags for maximum speed. `sc -a` means "scaffold add" for quickly registering multiple scripts: "web-setup", "homework", and "deploy" with their respective files. Then `sc web-setup my-assignment` uses the short alias to run the "web-setup" script with "my-assignment" as an argument. Finally `sc -l` (short for "scaffold list") quickly shows all registered scripts. Perfect for fast, frequent use.
+**What's happening in this complete example:** This shows a student's rapid workflow using command aliases for maximum speed. `scaffold a` means "scaffold add" for quickly registering multiple scripts: "web-setup", "homework", and "deploy" with their respective files. Then `scaffold web-setup my-assignment` runs the "web-setup" script with "my-assignment" as an argument. Finally `scaffold l` (short for "scaffold list") quickly shows all registered scripts. Perfect for fast, frequent use.
 
 **Someone automating daily tasks:**
 ```bash
