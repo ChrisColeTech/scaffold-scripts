@@ -43,14 +43,18 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
 
   it('should reject binary files', () => {
     // Test file type validation works
-    const { writeFileSync, rmSync } = require('fs');
-    const binaryFile = '/tmp/test-binary.exe';
+    const { writeFileSync, rmSync, mkdtempSync } = require('fs');
+    const { tmpdir } = require('os');
+    const { join } = require('path');
+    
+    const tempDir = mkdtempSync(join(tmpdir(), 'scaffold-test-'));
+    const binaryFile = join(tempDir, 'test-binary.exe');
     writeFileSync(binaryFile, 'text content'); // Text content but binary extension
     
     const result = execSync(`node ${CLI_PATH} add test-binary "${binaryFile}" 2>&1`, { encoding: 'utf8' });
     expect(result).toContain('Binary file type not supported');
     expect(result).toContain('.exe');
     
-    rmSync(binaryFile, { force: true });
+    rmSync(tempDir, { recursive: true, force: true });
   });
 });
