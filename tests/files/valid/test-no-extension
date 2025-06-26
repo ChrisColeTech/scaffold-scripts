@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Script with no extension"
+# Common for shell scripts

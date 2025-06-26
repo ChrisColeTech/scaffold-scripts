@@ -226,7 +226,6 @@ async function addCommand(name: string, scriptPath: string, options: any) {
 
     // Create the command object
     const command = processor.createCommand(
-      'script',
       name,
       processedScript,
       {

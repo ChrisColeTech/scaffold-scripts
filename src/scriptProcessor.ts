@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { ScriptTypeDetector } from './scriptTypeDetector.js';
 import { AdvancedScriptConverter } from './scriptConverter.js';
@@ -33,11 +32,42 @@ export class ScriptProcessor {
     allowSystemModification?: boolean;
   } = {}): Promise<ProcessedScript> {
     
-    // 1. Read the original script
+    // 1. Validate file type and read the script
     const absolutePath = resolve(scriptPath);
-    const originalScript = readFileSync(absolutePath, 'utf-8');
+    const validation = this.validator.validateFromFile(absolutePath, {
+      strict: options.strict || false,
+      allowNetworkAccess: options.allowNetworkAccess || !options.strict,
+      allowSystemModification: options.allowSystemModification || !options.strict
+    });
 
-    return this.processScriptContent(originalScript, options);
+    // Early return if file type validation failed
+    if (!validation.isValid) {
+      return {
+        original: '',
+        windows: undefined,
+        unix: undefined,
+        crossPlatform: undefined,
+        originalPlatform: 'cross-platform',
+        scriptType: 'shell',
+        validation: {
+          isValid: validation.isValid,
+          errors: validation.errors,
+          warnings: validation.warnings
+        }
+      };
+    }
+
+    const originalScript = validation.sanitizedScript;
+    const contentResult = await this.processScriptContent(originalScript, options);
+    
+    // Merge file validation warnings with content validation
+    return {
+      ...contentResult,
+      validation: {
+        ...contentResult.validation,
+        warnings: [...validation.warnings, ...contentResult.validation.warnings]
+      }
+    };
   }
 
   /**
@@ -90,7 +120,6 @@ export class ScriptProcessor {
    * Create a ScaffoldCommand from processed script
    */
   createCommand(
-    type: 'script' | 'init',
     name: string,
     processedScript: ProcessedScript,
     options: {
@@ -103,7 +132,6 @@ export class ScriptProcessor {
     const now = new Date().toISOString();
     
     return {
-      type,
       name,
       script_original: processedScript.original,
       script_windows: processedScript.windows,
@@ -187,12 +215,12 @@ export class ScriptProcessor {
     if (isWindows && !command.script_windows && command.original_platform === 'unix') {
       warnings.push('This script was written for Unix/Linux and may not work properly on Windows');
       recommendations.push('Consider adding a Windows-specific version with: scaffold update ' + 
-                          command.type + ' ' + command.name + ' /path/to/windows-script.ps1');
+                          command.name + ' /path/to/windows-script.ps1');
       compatible = false;
     } else if (!isWindows && !command.script_unix && command.original_platform === 'windows') {
       warnings.push('This script was written for Windows and may not work properly on Unix/Linux');
       recommendations.push('Consider adding a Unix-specific version with: scaffold update ' + 
-                          command.type + ' ' + command.name + ' /path/to/unix-script.sh');
+                          command.name + ' /path/to/unix-script.sh');
       compatible = false;
     }
 

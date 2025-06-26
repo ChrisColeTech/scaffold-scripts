@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, extname } from 'path';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -15,6 +15,29 @@ export interface ValidationOptions {
 }
 
 export class ScriptValidator {
+  private allowedExtensions = [
+    '.sh', '.bash', '.zsh', '.fish',           // Shell scripts
+    '.ps1', '.psm1',                           // PowerShell
+    '.py', '.py3',                             // Python
+    '.js', '.mjs', '.ts',                      // JavaScript/TypeScript
+    '.rb',                                     // Ruby
+    '.pl',                                     // Perl
+    '.bat', '.cmd',                            // Batch/CMD
+    '.txt', '.text',                           // Plain text
+    ''                                         // No extension (common for shell scripts)
+  ];
+
+  private binaryExtensions = [
+    '.exe', '.dll', '.so', '.dylib',           // Executables/Libraries
+    '.bin', '.com', '.msi', '.deb', '.rpm',    // Binary packages
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp',   // Images
+    '.mp3', '.wav', '.mp4', '.avi', '.mov',    // Media
+    '.zip', '.tar', '.gz', '.7z', '.rar',      // Archives
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx',  // Documents
+    '.class', '.jar',                          // Compiled Java
+    '.o', '.obj', '.a', '.lib'                 // Compiled objects
+  ];
+
   private dangerousCommands = [
     // Destructive operations
     'rm -rf', 'del /s', 'rmdir /s', 'format', 'fdisk',
@@ -111,8 +134,23 @@ export class ScriptValidator {
   validateFromFile(filePath: string, options: ValidationOptions = {}): ValidationResult {
     try {
       const absolutePath = resolve(filePath);
+      
+      // Validate file type before reading
+      const fileTypeValidation = this.validateFileType(absolutePath);
+      if (!fileTypeValidation.isValid) {
+        return fileTypeValidation;
+      }
+      
       const script = readFileSync(absolutePath, 'utf-8');
-      return this.validate(script, options);
+      
+      // Validate content
+      const contentValidation = this.validate(script, options);
+      
+      // Merge file type warnings with content validation
+      return {
+        ...contentValidation,
+        warnings: [...fileTypeValidation.warnings, ...contentValidation.warnings]
+      };
     } catch (error: any) {
       return {
         isValid: false,
@@ -121,6 +159,72 @@ export class ScriptValidator {
         sanitizedScript: ''
       };
     }
+  }
+
+  /**
+   * Validate file type and extension
+   */
+  private validateFileType(filePath: string): ValidationResult {
+    const ext = extname(filePath).toLowerCase();
+    const result: ValidationResult = {
+      isValid: true,
+      errors: [],
+      warnings: [],
+      sanitizedScript: ''
+    };
+
+    // Check for binary file extensions
+    if (this.binaryExtensions.includes(ext)) {
+      result.isValid = false;
+      result.errors.push(`Binary file type not supported: ${ext}`);
+      return result;
+    }
+
+    // Check for allowed extensions
+    if (!this.allowedExtensions.includes(ext)) {
+      result.warnings.push(`Unusual file extension for script: ${ext}. Consider using .sh, .ps1, .py, .js, or .bat`);
+    }
+
+    // Additional check for files that might contain binary data
+    try {
+      const buffer = readFileSync(filePath);
+      if (this.isBinaryContent(buffer)) {
+        result.isValid = false;
+        result.errors.push('File appears to contain binary data, not text');
+        return result;
+      }
+    } catch (error) {
+      result.isValid = false;
+      result.errors.push(`Cannot read file: ${error}`);
+      return result;
+    }
+
+    return result;
+  }
+
+  /**
+   * Check if buffer contains binary data
+   */
+  private isBinaryContent(buffer: Buffer): boolean {
+    // Check for null bytes (common in binary files)
+    if (buffer.includes(0)) {
+      return true;
+    }
+
+    // Check for high percentage of non-printable characters
+    let nonPrintable = 0;
+    const sampleSize = Math.min(buffer.length, 1024); // Check first 1KB
+    
+    for (let i = 0; i < sampleSize; i++) {
+      const byte = buffer[i];
+      // Allow printable ASCII, newline, tab, carriage return
+      if (!(byte >= 32 && byte <= 126) && byte !== 10 && byte !== 13 && byte !== 9) {
+        nonPrintable++;
+      }
+    }
+
+    // If more than 30% non-printable characters, likely binary
+    return (nonPrintable / sampleSize) > 0.3;
   }
 
   /**

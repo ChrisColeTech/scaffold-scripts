@@ -45,9 +45,7 @@ export class ScaffoldDatabase {
         
         if (needsMigration) {
           this.migrateDatabase().then(() => {
-            this.createNewSchema().then(() => {
-              this.seedDefaultCommands().then(resolve).catch(reject);
-            }).catch(reject);
+            this.seedDefaultCommands().then(resolve).catch(reject);
           }).catch(reject);
         } else {
           this.createNewSchema().then(() => {
@@ -108,7 +106,7 @@ export class ScaffoldDatabase {
           return;
         }
 
-        // Backup old table
+        // Backup old table and create new schema
         this.db.exec(`
           CREATE TABLE commands_backup AS SELECT * FROM commands;
           DROP TABLE commands;
@@ -119,10 +117,85 @@ export class ScaffoldDatabase {
           }
 
           console.log('✅ Database backup created and old table dropped');
-          resolve();
+          
+          // Now migrate the data from backup to new schema
+          this.createNewSchema().then(() => {
+            this.migrateOldData(rows).then(() => {
+              console.log('✅ Data migration completed');
+              resolve();
+            }).catch(reject);
+          }).catch(reject);
         });
       });
     });
+  }
+
+  private async migrateOldData(oldRows: any[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!oldRows || oldRows.length === 0) {
+        resolve();
+        return;
+      }
+
+      let completed = 0;
+      const total = oldRows.length;
+
+      for (const row of oldRows) {
+        // Convert old schema to new schema
+        const newCommand: Omit<ScaffoldCommand, 'id'> = {
+          name: row.name,
+          script_original: row.script || row.content || '',
+          script_windows: row.script_windows || null,
+          script_unix: row.script_unix || null,
+          script_cross_platform: row.script_cross_platform || null,
+          original_platform: row.original_platform || 'unix',
+          script_type: row.script_type || this.detectScriptType(row.script || row.content || ''),
+          platform: row.platform || 'all',
+          alias: row.alias || null,
+          description: row.description || null,
+          createdAt: row.createdAt || new Date().toISOString(),
+          updatedAt: row.updatedAt || new Date().toISOString()
+        };
+
+        this.db.run(
+          `INSERT INTO commands (name, script_original, script_windows, script_unix, script_cross_platform, original_platform, script_type, platform, alias, description, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            newCommand.name,
+            newCommand.script_original,
+            newCommand.script_windows,
+            newCommand.script_unix,
+            newCommand.script_cross_platform,
+            newCommand.original_platform,
+            newCommand.script_type,
+            newCommand.platform,
+            newCommand.alias,
+            newCommand.description,
+            newCommand.createdAt,
+            newCommand.updatedAt
+          ],
+          (insertErr) => {
+            if (insertErr) {
+              console.warn(`⚠️  Failed to migrate command "${row.name}":`, insertErr.message);
+            }
+            
+            completed++;
+            if (completed === total) {
+              resolve();
+            }
+          }
+        );
+      }
+    });
+  }
+
+  private detectScriptType(script: string): string {
+    if (script.includes('#!/bin/bash') || script.includes('#!/bin/sh')) return 'shell';
+    if (script.includes('#!') && script.includes('python')) return 'python';
+    if (script.includes('#!') && script.includes('node')) return 'nodejs';
+    if (script.includes('powershell') || script.toLowerCase().includes('param(')) return 'powershell';
+    if (script.includes('.bat') || script.includes('@echo')) return 'batch';
+    return 'shell'; // default
   }
 
   private async seedDefaultCommands(): Promise<void> {
