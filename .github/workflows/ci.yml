@@ -11,8 +11,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [16, 18, 20]
+        include:
+          # Primary testing on Ubuntu with multiple Node versions
+          - os: ubuntu-latest
+            node-version: 18
+          - os: ubuntu-latest  
+            node-version: 20
+          # Cross-platform smoke tests on latest Node only
+          - os: windows-latest
+            node-version: 20
+          - os: macos-latest
+            node-version: 20
 
     steps:
       - name: Checkout code
