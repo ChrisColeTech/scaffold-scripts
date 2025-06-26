@@ -83,6 +83,34 @@ icacls.exe $configPath /inheritance:r /grant:r "${env:USERNAME}:F" | Out-Null
 Write-Host "Adding GitHub to known hosts..." -ForegroundColor Yellow
 ssh-keyscan.exe github.com 2>$null | Add-Content "$SSHDir\known_hosts"
 
+# Start SSH Agent and add key
+Write-Host "Starting SSH Agent and adding key..." -ForegroundColor Yellow
+try {
+    # Check if ssh-agent service exists and start it
+    $sshAgentService = Get-Service -Name ssh-agent -ErrorAction SilentlyContinue
+    if ($sshAgentService) {
+        if ($sshAgentService.StartType -eq 'Disabled') {
+            Write-Host "Enabling ssh-agent service..." -ForegroundColor Yellow
+            Set-Service -Name ssh-agent -StartupType Manual
+        }
+        
+        if ($sshAgentService.Status -ne 'Running') {
+            Write-Host "Starting ssh-agent service..." -ForegroundColor Yellow
+            Start-Service ssh-agent
+        }
+        
+        Write-Host "Adding SSH key to agent..." -ForegroundColor Yellow
+        ssh-add.exe $keyPath
+        Write-Host "✓ SSH key added to agent!" -ForegroundColor Green
+    } else {
+        Write-Host "SSH Agent service not available. Key not added to agent." -ForegroundColor Yellow
+        Write-Host "You can manually add it later with: ssh-add $keyPath" -ForegroundColor White
+    }
+} catch {
+    Write-Host "Could not start SSH Agent: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "You can manually add the key later with: ssh-add $keyPath" -ForegroundColor White
+}
+
 Write-Host "✓ Setup complete!" -ForegroundColor Green
 Write-Host ""
 

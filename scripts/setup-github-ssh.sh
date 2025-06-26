@@ -56,9 +56,17 @@ fi
 
 # Start SSH agent and add key
 echo -e "${YELLOW}🔧 Starting SSH agent and adding key...${NC}"
-eval "$(ssh-agent -s)" > /dev/null
-ssh-add "$KEY_PATH"
-echo -e "${GREEN}✅ Key added to SSH agent${NC}"
+if eval "$(ssh-agent -s)" > /dev/null 2>&1; then
+    if ssh-add "$KEY_PATH" 2>/dev/null; then
+        echo -e "${GREEN}✅ SSH key added to agent${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Could not add key to SSH agent${NC}"
+        echo -e "${YELLOW}You can manually add it later with: ssh-add $KEY_PATH${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️  Could not start SSH agent${NC}"
+    echo -e "${YELLOW}You can manually add the key later with: ssh-add $KEY_PATH${NC}"
+fi
 
 # Create SSH config
 echo -e "${YELLOW}⚙️  Creating SSH config...${NC}"
