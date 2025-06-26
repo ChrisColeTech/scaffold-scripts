@@ -29,24 +29,41 @@ Write-Host "Generating SSH key (this will take a moment)..." -ForegroundColor Ye
 
 $keyPath = "$SSHDir\github_key"
 
-# Use PowerShell to handle the interactive prompts
-$process = Start-Process -FilePath "ssh-keygen.exe" -ArgumentList @(
-    "-t", "ed25519",
-    "-C", $Email,
-    "-f", $keyPath,
-    "-q"
-) -NoNewWindow -Wait -PassThru
+# Check if key already exists and handle it
+if (Test-Path $keyPath) {
+    Write-Host "SSH key already exists at $keyPath" -ForegroundColor Yellow
+    Write-Host "Do you want to overwrite it? (y/N): " -NoNewline -ForegroundColor Yellow
+    $response = Read-Host
+    if ($response -notmatch "^[yY]") {
+        Write-Host "Using existing key..." -ForegroundColor Green
+        $skipGeneration = $true
+    } else {
+        Remove-Item $keyPath -Force -ErrorAction SilentlyContinue
+        Remove-Item "$keyPath.pub" -Force -ErrorAction SilentlyContinue
+    }
+}
 
-# If that didn't work, try with explicit no passphrase
-if ($process.ExitCode -ne 0 -or -not (Test-Path "$keyPath.pub")) {
-    Write-Host "Trying alternative key generation method..." -ForegroundColor Yellow
-    
-    # Create a temporary response file
-    $responseFile = "$env:TEMP\ssh_responses.txt"
-    @("", "", "y") | Set-Content $responseFile
-    
-    Get-Content $responseFile | ssh-keygen.exe -t ed25519 -C $Email -f $keyPath
-    Remove-Item $responseFile -ErrorAction SilentlyContinue
+# Generate SSH key with no passphrase
+if (-not $skipGeneration) {
+    try {
+        # Simple direct call with proper quoting
+        $arguments = "-t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`" -q"
+        
+        Write-Host "Running: ssh-keygen $arguments" -ForegroundColor Gray
+        
+        $process = Start-Process -FilePath "ssh-keygen.exe" -ArgumentList $arguments -Wait -PassThru -NoNewWindow
+        
+        if ($process.ExitCode -ne 0) {
+            throw "SSH key generation failed with exit code $($process.ExitCode)"
+        }
+        
+        Write-Host "✓ SSH key generated successfully!" -ForegroundColor Green
+    } catch {
+        Write-Host "Error generating SSH key: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Please run this manually:" -ForegroundColor Yellow
+        Write-Host "ssh-keygen -t ed25519 -C `"$Email`" -f `"$keyPath`" -N `"`"" -ForegroundColor White
+        exit 1
+    }
 }
 
 # Check if key was created
@@ -82,6 +99,54 @@ icacls.exe $configPath /inheritance:r /grant:r "${env:USERNAME}:F" | Out-Null
 # Add to known hosts
 Write-Host "Adding GitHub to known hosts..." -ForegroundColor Yellow
 ssh-keyscan.exe github.com 2>$null | Add-Content "$SSHDir\known_hosts"
+
+# Start SSH Agent and add key
+Write-Host "Starting SSH Agent and adding key..." -ForegroundColor Yellow
+
+# Check if running as administrator
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
+
+try {
+    # Check if ssh-agent service exists
+    $sshAgentService = Get-Service -Name ssh-agent -ErrorAction SilentlyContinue
+    if ($sshAgentService) {
+        if ($sshAgentService.StartType -eq 'Disabled') {
+            if ($isAdmin) {
+                Write-Host "Enabling ssh-agent service..." -ForegroundColor Yellow
+                Set-Service -Name ssh-agent -StartupType Manual
+            } else {
+                Write-Host "ssh-agent service is disabled and requires admin rights to enable." -ForegroundColor Yellow
+                Write-Host "Please run PowerShell as Administrator or manually enable the service." -ForegroundColor Yellow
+            }
+        }
+        
+        if ($sshAgentService.Status -ne 'Running') {
+            if ($isAdmin) {
+                Write-Host "Starting ssh-agent service..." -ForegroundColor Yellow
+                Start-Service ssh-agent
+            } else {
+                Write-Host "ssh-agent service requires admin rights to start." -ForegroundColor Yellow
+                Write-Host "Please run PowerShell as Administrator or manually start the service." -ForegroundColor Yellow
+            }
+        }
+        
+        # Try to add the key regardless of service status
+        Write-Host "Adding SSH key to agent..." -ForegroundColor Yellow
+        $addResult = & ssh-add.exe $keyPath 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✓ SSH key added to agent!" -ForegroundColor Green
+        } else {
+            Write-Host "Could not add key to ssh-agent: $addResult" -ForegroundColor Yellow
+            Write-Host "You can manually add it later with: ssh-add `"$keyPath`"" -ForegroundColor White
+        }
+    } else {
+        Write-Host "SSH Agent service not available. Key not added to agent." -ForegroundColor Yellow
+        Write-Host "You can manually add it later with: ssh-add `"$keyPath`"" -ForegroundColor White
+    }
+} catch {
+    Write-Host "Could not manage SSH Agent: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "You can manually add the key later with: ssh-add `"$keyPath`"" -ForegroundColor White
+}
 
 Write-Host "✓ Setup complete!" -ForegroundColor Green
 Write-Host ""
