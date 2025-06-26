@@ -6,12 +6,12 @@ Simple CLI tool for managing and running your own scripts. Add any script, run i
 
 ### Unix/Linux/macOS
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/scripts/install.sh | bash
 ```
 
 ### Windows PowerShell
 ```powershell
-irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/scripts/install.ps1 | iex
 ```
 
 ## ✨ Simple Commands

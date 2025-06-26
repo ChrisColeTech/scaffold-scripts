@@ -168,9 +168,10 @@ Write-ColorOutput "🎉 Installation complete!" -Color Green
 Write-Host ""
 Write-ColorOutput "📖 Quick Start:" -Color Blue
 Write-ColorOutput "  scaffold --help                    # Show help" -Color Blue
-Write-ColorOutput "  scaffold list                      # List available commands" -Color Blue
-Write-ColorOutput "  scaffold add frontend react script.txt  # Add command" -Color Blue
-Write-ColorOutput "  scaffold -f react                  # Run frontend scaffold" -Color Blue
+Write-ColorOutput "  scaffold list                      # List available scripts" -Color Blue
+Write-ColorOutput "  scaffold add setup script.sh       # Add a script" -Color Blue
+Write-ColorOutput "  scaffold setup my-project          # Run a script" -Color Blue
+Write-ColorOutput "  ss -l                              # Use shorthand" -Color Blue
 Write-Host ""
 Write-ColorOutput "📚 Documentation: $RepoUrl" -Color Blue
 
