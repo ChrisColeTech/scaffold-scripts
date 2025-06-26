@@ -479,19 +479,19 @@ To enable pushing commits directly from the CLI, set up SSH authentication:
 
 ### Unix/Linux/macOS
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/setup-github-ssh.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/scripts/setup-github-ssh.sh | bash
 ```
 
 ### Windows PowerShell
 ```powershell
-irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/setup-github-ssh.ps1 | iex
+irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/scripts/setup-github-ssh.ps1 | iex
 ```
 
 ### Manual Setup
 ```bash
 # Clone and run locally
 git clone https://github.com/ChrisColeTech/scaffold-scripts.git
-cd scaffold-scripts
+cd scaffold-scripts/scripts
 ./setup-github-ssh.sh          # Unix/Linux/macOS
 # or
 .\setup-github-ssh.ps1         # Windows PowerShell
@@ -541,12 +541,12 @@ If the built-in command doesn't work, use these alternatives:
 
 ### Unix/Linux/macOS
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/scripts/uninstall.sh | bash
 ```
 
 ### Windows PowerShell
 ```powershell
-irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/scripts/uninstall.ps1 | iex
 ```
 
 ## 📄 License
