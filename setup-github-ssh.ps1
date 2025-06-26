@@ -48,7 +48,8 @@ try {
 $SkipKeygen = $false
 if (Test-Path $KeyPath) {
     Write-ColorOutput "⚠️  SSH key already exists at $KeyPath" -Color Yellow
-    $response = Read-Host "Do you want to overwrite it? (y/N)"
+    Write-Host "Do you want to overwrite it? (y/N): " -NoNewline -ForegroundColor Yellow
+    $response = Read-Host
     if ($response -notmatch "^[yY]([eE][sS])?$") {
         Write-ColorOutput "✅ Using existing key" -Color Green
         $SkipKeygen = $true
@@ -69,14 +70,24 @@ if (-not $SkipKeygen) {
 # Start SSH agent and add key
 Write-ColorOutput "🔧 Starting SSH agent and adding key..." -Color Yellow
 try {
-    # Start SSH agent
-    Start-Service ssh-agent -ErrorAction SilentlyContinue
+    # Check if ssh-agent service exists and start it
+    $sshAgentService = Get-Service ssh-agent -ErrorAction SilentlyContinue
+    if ($sshAgentService) {
+        if ($sshAgentService.Status -ne 'Running') {
+            Start-Service ssh-agent -ErrorAction SilentlyContinue
+            Write-ColorOutput "✅ Started SSH agent service" -Color Green
+        }
+    }
     
     # Add key to agent
-    ssh-add.exe $KeyPath
-    Write-ColorOutput "✅ Key added to SSH agent" -Color Green
+    $addResult = ssh-add.exe $KeyPath 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-ColorOutput "✅ Key added to SSH agent" -Color Green
+    } else {
+        Write-ColorOutput "⚠️  Could not add to SSH agent (this is often normal on Windows)" -Color Yellow
+    }
 } catch {
-    Write-ColorOutput "⚠️  Could not add to SSH agent (this is often normal on Windows)" -Color Yellow
+    Write-ColorOutput "⚠️  Could not start SSH agent (this is often normal on Windows)" -Color Yellow
 }
 
 # Create SSH config
@@ -120,7 +131,8 @@ if (Test-Path $SSHConfig) {
     $configContent = Get-Content $SSHConfig -Raw
     if ($configContent -match "Host github\.com") {
         Write-ColorOutput "⚠️  GitHub SSH config already exists" -Color Yellow
-        $response = Read-Host "Do you want to update it? (y/N)"
+        Write-Host "Do you want to update it? (y/N): " -NoNewline -ForegroundColor Yellow
+        $response = Read-Host
         if ($response -notmatch "^[yY]([eE][sS])?$") {
             $UpdateConfig = $false
         } else {
@@ -203,7 +215,8 @@ Write-ColorOutput "  git config --global user.email '$Email'" -Color Blue
 Write-Host ""
 
 # Offer to test connection
-$response = Read-Host "Would you like to test the GitHub connection now? (y/N)"
+Write-Host "Would you like to test the GitHub connection now? (y/N): " -NoNewline -ForegroundColor Yellow
+$response = Read-Host
 if ($response -match "^[yY]([eE][sS])?$") {
     Write-ColorOutput "🧪 Testing GitHub connection..." -Color Yellow
     try {
@@ -213,6 +226,7 @@ if ($response -match "^[yY]([eE][sS])?$") {
             Write-ColorOutput "You're ready to push to GitHub repositories" -Color Green
         } else {
             Write-ColorOutput "❌ Connection failed" -Color Red
+            Write-ColorOutput "Output: $result" -Color Yellow
             Write-ColorOutput "Make sure you've added the public key to GitHub first" -Color Yellow
             Write-ColorOutput "Then run: ssh -T git@github.com" -Color Yellow
         }
