@@ -76,58 +76,22 @@ jobs:
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-cli-unix-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
         run: |
-          echo "🔍 Debug: Testing Unix CLI on ${{ matrix.os }}"
-          echo "🔍 Debug: Database dir: $SCAFFOLD_SCRIPTS_DB_DIR"
-          
           # Test basic commands
-          echo "🔍 Testing basic commands..."
-          node dist/index.js --help > /dev/null && echo "✅ Help works" || echo "❌ Help failed"
-          node dist/index.js --version > /dev/null && echo "✅ Version works" || echo "❌ Version failed"
-          node dist/index.js list > /dev/null && echo "✅ List works" || echo "❌ List failed"
+          node dist/index.js --help > /dev/null || exit 1
+          node dist/index.js --version > /dev/null || exit 1
+          node dist/index.js list > /dev/null || exit 1
           
-          # Test all aliases error handling with debugging
-          echo "🔍 Testing error handling..."
-          
-          echo "Testing 'add' command..."
-          if ! node dist/index.js add 2>&1 | grep -q "Missing required arguments"; then 
-            echo "❌ 'add' test failed - checking output:"
-            node dist/index.js add 2>&1 | head -5
-            exit 1
-          fi
-          echo "✅ 'add' test passed"
-          
-          echo "Testing 'a' alias..."
-          if ! node dist/index.js a 2>&1 | grep -q "Missing required arguments"; then
-            echo "❌ 'a' test failed - checking output:"
-            node dist/index.js a 2>&1 | head -5
-            exit 1
-          fi
-          echo "✅ 'a' test passed"
-          
-          # Test remaining aliases
-          for cmd in u r s; do
-            echo "Testing '$cmd' alias..."
-            if ! node dist/index.js $cmd 2>&1 | grep -q "Missing required arguments"; then
-              echo "❌ '$cmd' test failed - checking output:"
-              node dist/index.js $cmd 2>&1 | head -5
-              exit 1
-            fi
-            echo "✅ '$cmd' test passed"
-          done
+          # Test error handling with aliases (commands should exit 1 and show proper messages)
+          node dist/index.js add 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js a 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js u 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js r 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js s 2>&1 | grep -q "Missing required arguments" || exit 1
           
           # Test list aliases work identically
-          echo "🔍 Testing list alias consistency..."
           node dist/index.js list > /tmp/list1.txt
           node dist/index.js l > /tmp/list2.txt
-          if ! diff /tmp/list1.txt /tmp/list2.txt; then
-            echo "❌ List outputs differ:"
-            echo "Full command output:"
-            cat /tmp/list1.txt
-            echo "Alias output:"
-            cat /tmp/list2.txt
-            exit 1
-          fi
-          echo "✅ List consistency test passed"
+          diff /tmp/list1.txt /tmp/list2.txt || exit 1
           
           echo "✅ All alias tests passed on Unix"
 
