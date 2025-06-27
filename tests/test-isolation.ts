@@ -22,12 +22,25 @@ export const CLI_PATH = join(__dirname, '..', 'dist', 'index.js');
 
 /**
  * Execute CLI command with proper test environment
+ * Returns output for both success and failure cases
  */
 export function execCLI(command: string, options: any = {}): any {
-  return execSync(`node ${CLI_PATH} ${command}`, {
-    ...options,
-    env: TEST_ENV
-  });
+  try {
+    return execSync(`node ${CLI_PATH} ${command}`, {
+      ...options,
+      env: TEST_ENV
+    });
+  } catch (error: any) {
+    // For CLI commands that exit with non-zero (like validation errors),
+    // return the combined output instead of throwing
+    if (error.status !== undefined) {
+      const stdout = error.stdout?.toString() || '';
+      const stderr = error.stderr?.toString() || '';
+      return stdout + stderr;
+    }
+    // Re-throw unexpected errors (like ENOENT, etc.)
+    throw error;
+  }
 }
 
 /**
