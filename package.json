@@ -1,6 +1,6 @@
 {
   "name": "scaffold-scripts",
-  "version": "3.0.13",
+  "version": "3.0.14",
   "description": "Simple CLI tool for managing and running your own scripts. Add any script, run it anywhere.",
   "main": "dist/index.js",
   "bin": {
