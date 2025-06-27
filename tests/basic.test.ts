@@ -121,17 +121,17 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     
     // Test 'l' alias for 'list' command - should work without error
     expect(() => {
-      execSync(`node ${CLI_PATH} l`, { stdio: 'pipe' });
+      execCLI('l', { stdio: 'pipe' });
     }).not.toThrow();
     
     // Test 'list' full command - should work without error
     expect(() => {
-      execSync(`node ${CLI_PATH} list`, { stdio: 'pipe' });
+      execCLI('list', { stdio: 'pipe' });
     }).not.toThrow();
     
     // Verify 'l' and 'list' produce same output (in clean state, both should show "No scripts available")
-    const lResult = execSync(`node ${CLI_PATH} l`, { encoding: 'utf8', stdio: 'pipe' });
-    const listResult = execSync(`node ${CLI_PATH} list`, { encoding: 'utf8', stdio: 'pipe' });
+    const lResult = execCLI('l', { encoding: 'utf8', stdio: 'pipe' });
+    const listResult = execCLI('list', { encoding: 'utf8', stdio: 'pipe' });
     expect(lResult).toBe(listResult);
     expect(lResult).toContain('No scripts available');
     
@@ -246,7 +246,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     const binaryFile = join(tempDir, 'test-binary.exe');
     writeFileSync(binaryFile, 'text content'); // Text content but binary extension
     
-    const result = execSync(`node ${CLI_PATH} add test-binary "${binaryFile}" 2>&1`, { encoding: 'utf8' });
+    const result = execCLI(`add test-binary "${binaryFile}"`, { encoding: 'utf8' });
     expect(result).toContain('Binary file type not supported');
     expect(result).toContain('.exe');
     
