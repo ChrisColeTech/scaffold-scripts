@@ -23,11 +23,11 @@ irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/script
 | `scripts update` | `scripts u` / `scaffold update` | Update a script | `scripts update setup new-script.sh` |
 | `scripts remove` | `scripts r` / `scaffold remove` | Remove a script | `scripts remove setup` |
 | `scripts list` | `scripts l` / `scaffold list` | List all scripts | `scripts list` |
-| `scripts view` | `scripts v` / `scaffold view` | View script details | `scripts view setup` |
+| `scripts view` | `scripts s` / `scaffold view` | View script details | `scripts view setup` |
 
 **Choose your style:**
 - **Full commands:** `scripts add`, `scripts list` - Clear, descriptive, and shorter to type
-- **Speed typing:** `scripts a`, `scripts l`, `scripts v` - Fastest option  
+- **Speed typing:** `scripts a`, `scripts l`, `scripts s` - Fastest option  
 - **Alternative:** `scaffold add`, `scaffold list` - If you prefer to match the package name
 
 ## 🔄 The Workflow (Crystal Clear)

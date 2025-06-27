@@ -29,9 +29,9 @@ scripts list
 | `scripts list` | `scripts l` / `scaffold list` | List all scripts |
 | `scripts remove` | `scripts r` / `scaffold remove` | Remove a script |
 | `scripts update` | `scripts u` / `scaffold update` | Update a script |
-| `scripts view` | `scripts v` / `scaffold view` | View script details |
+| `scripts view` | `scripts s` / `scaffold view` | View script details |
 
-**Speed shortcuts:** Use `scripts a`, `scripts l`, `scripts r`, `scripts u`, `scripts v` for faster typing.  
+**Speed shortcuts:** Use `scripts a`, `scripts l`, `scripts r`, `scripts u`, `scripts s` for faster typing.  
 **Alternative:** Use `scaffold` if you prefer to match the package name.
 
 ## The Workflow
