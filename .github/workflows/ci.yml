@@ -65,35 +65,8 @@ jobs:
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-aliases-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
 
-      - name: Debug environment (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Write-Host "🔍 Debug: Windows environment check"
-          Write-Host "Database dir: $env:SCAFFOLD_SCRIPTS_DB_DIR"
-          Write-Host "Temp dir: ${{ runner.temp }}"
-          Write-Host "Node version: $(node --version)"
-          Write-Host "NPM version: $(npm --version)"
-          Write-Host "Current directory: $(Get-Location)"
-          Write-Host "Testing simple Jest run..."
-          npx jest --version
-
       - name: Run all tests with coverage
-        run: |
-          echo "🔍 Debug: Starting coverage tests on ${{ matrix.os }}"
-          echo "🔍 Debug: Database dir: $SCAFFOLD_SCRIPTS_DB_DIR"
-          echo "🔍 Debug: Temp dir: ${{ runner.temp }}"
-          echo "🔍 Debug: Node version: $(node --version)"
-          echo "🔍 Debug: NPM version: $(npm --version)"
-          echo "🔍 Debug: Current directory: $(pwd)"
-          echo "🔍 Debug: Jest config:"
-          cat jest.config.js
-          echo "🔍 Debug: Running basic test first..."
-          npm run test:basic 2>&1 | head -20
-          echo "🔍 Debug: Now running coverage test..."
-          npm run test:coverage
-          echo "🔍 Debug: Coverage test completed with exit code: $?"
-        shell: bash
+        run: npm run test:coverage
         timeout-minutes: 15
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
@@ -164,104 +137,36 @@ jobs:
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-cli-windows-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
         run: |
-          Write-Host "🔍 Debug: Starting Windows CLI tests"
-          Write-Host "Database dir: $env:SCAFFOLD_SCRIPTS_DB_DIR"
-          
           # Test basic commands that should succeed
-          Write-Host "Testing --help..."
           node dist/index.js --help
-          if ($LASTEXITCODE -ne 0) { 
-            Write-Host "ERROR: --help failed with exit code $LASTEXITCODE"
-            exit 1 
-          }
-          Write-Host "✅ --help passed"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
           
-          Write-Host "Testing --version..."
           node dist/index.js --version  
-          if ($LASTEXITCODE -ne 0) { 
-            Write-Host "ERROR: --version failed with exit code $LASTEXITCODE"
-            exit 1 
-          }
-          Write-Host "✅ --version passed"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
           
-          Write-Host "Testing list command..."
           node dist/index.js list
-          if ($LASTEXITCODE -ne 0) { 
-            Write-Host "ERROR: list failed with exit code $LASTEXITCODE"
-            exit 1 
-          }
-          Write-Host "✅ list passed"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
           
-          # Test that commands with missing args show proper error messages and exit 1
-          Write-Host "Testing add command error handling..."
+          # Test error handling with aliases (commands should exit 1 and show proper messages)
           $addOutput = node dist/index.js add 2>&1
-          if ($LASTEXITCODE -ne 1) { 
-            Write-Host "ERROR: add command should exit with status 1, got $LASTEXITCODE"
-            Write-Host "Output: $addOutput"
-            exit 1 
-          }
-          # Convert to string and check for error text
-          $outputString = $addOutput -join "`n"
-          if ($outputString -notmatch "Missing required arguments") {
-            Write-Host "ERROR: add command should show 'Missing required arguments'"
-            Write-Host "Looking for: 'Missing required arguments'"
-            Write-Host "Full output string:"
-            Write-Host "'$outputString'"
-            Write-Host "Contains 'Error': $($outputString -match 'Error')"
-            Write-Host "Contains 'Missing': $($outputString -match 'Missing')"
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 1) { exit 1 }
+          if (($addOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
           
-          Write-Host "Testing 'a' alias error handling..."
           $aOutput = node dist/index.js a 2>&1
-          if ($LASTEXITCODE -ne 1) {
-            Write-Host "ERROR: 'a' alias should exit with status 1, got $LASTEXITCODE"
-            exit 1
-          }
-          if (($aOutput -join "`n") -notmatch "Missing required arguments") {
-            Write-Host "ERROR: 'a' alias should show 'Missing required arguments'"  
-            Write-Host "Output: $($aOutput -join "`n")"
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 1) { exit 1 }
+          if (($aOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
           
-          Write-Host "Testing 'u' alias error handling..."
           $uOutput = node dist/index.js u 2>&1
-          if ($LASTEXITCODE -ne 1) {
-            Write-Host "ERROR: 'u' alias should exit with status 1, got $LASTEXITCODE"
-            Write-Host "Output: $uOutput"
-            exit 1
-          }
-          if (($uOutput -join "`n") -notmatch "Missing required arguments") {
-            Write-Host "ERROR: 'u' alias should show 'Missing required arguments'"
-            Write-Host "Output: $($uOutput -join "`n")"
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 1) { exit 1 }
+          if (($uOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
           
-          Write-Host "Testing 'r' alias error handling..."
           $rOutput = node dist/index.js r 2>&1
-          if ($LASTEXITCODE -ne 1) {
-            Write-Host "ERROR: 'r' alias should exit with status 1, got $LASTEXITCODE"
-            Write-Host "Output: $rOutput"
-            exit 1
-          }
-          if (($rOutput -join "`n") -notmatch "Missing required arguments") {
-            Write-Host "ERROR: 'r' alias should show 'Missing required arguments'"
-            Write-Host "Output: $($rOutput -join "`n")"
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 1) { exit 1 }
+          if (($rOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
           
-          Write-Host "Testing 's' alias error handling..."
           $sOutput = node dist/index.js s 2>&1
-          if ($LASTEXITCODE -ne 1) {
-            Write-Host "ERROR: 's' alias should exit with status 1, got $LASTEXITCODE"
-            Write-Host "Output: $sOutput"
-            exit 1
-          }
-          if (($sOutput -join "`n") -notmatch "Missing required arguments") {
-            Write-Host "ERROR: 's' alias should show 'Missing required arguments'"
-            Write-Host "Output: $($sOutput -join "`n")"
-            exit 1
-          }
+          if ($LASTEXITCODE -ne 1) { exit 1 }
+          if (($sOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
           
           Write-Host "✅ All alias tests passed on Windows"
           exit 0
