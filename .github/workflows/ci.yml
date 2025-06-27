@@ -44,13 +44,14 @@ jobs:
         run: npm run build
 
       - name: Run basic tests
-        run: npm test -- tests/basic.test.ts
+        run: npm run test:basic
 
-      - name: Run alias tests
-        run: npm test -- tests/aliases.test.ts
+      - name: Run alias tests  
+        run: npm run test:aliases
 
       - name: Run all tests with coverage
         run: npm run test:coverage
+        timeout-minutes: 10
 
       - name: Test CLI commands and aliases (Unix)
         if: runner.os != 'Windows'
