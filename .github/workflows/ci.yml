@@ -70,13 +70,14 @@ jobs:
           echo "🔍 Debug: Starting coverage tests on ${{ matrix.os }}"
           echo "🔍 Debug: Database dir: $SCAFFOLD_SCRIPTS_DB_DIR"
           echo "🔍 Debug: Temp dir: ${{ runner.temp }}"
-          npm run test:coverage || {
-            echo "❌ Coverage tests failed with exit code $?"
-            echo "🔍 Debug: Checking if CLI works..."
-            node dist/index.js --version || echo "CLI version check failed"
-            node dist/index.js list || echo "CLI list failed"
-            exit 1
-          }
+          echo "🔍 Debug: Node version: $(node --version)"
+          echo "🔍 Debug: NPM version: $(npm --version)"
+          echo "🔍 Debug: Current directory: $(pwd)"
+          echo "🔍 Debug: Jest config:"
+          cat jest.config.js
+          echo "🔍 Debug: Running coverage test..."
+          npm run test:coverage
+          echo "🔍 Debug: Coverage test completed with exit code: $?"
         shell: bash
         timeout-minutes: 15
         env:
