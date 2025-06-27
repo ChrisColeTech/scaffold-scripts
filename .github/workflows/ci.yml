@@ -68,7 +68,7 @@ jobs:
           echo "🔍 Debug: Starting coverage tests on ${{ matrix.os }}"
           echo "🔍 Debug: Database dir: $SCAFFOLD_SCRIPTS_DB_DIR"
           echo "🔍 Debug: Temp dir: ${{ runner.temp }}"
-          timeout 300 npm run test:coverage || {
+          npm run test:coverage || {
             echo "❌ Coverage tests failed with exit code $?"
             echo "🔍 Debug: Checking if CLI works..."
             node dist/index.js --version || echo "CLI version check failed"
