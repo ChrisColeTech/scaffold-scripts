@@ -199,6 +199,8 @@ jobs:
         npm install -g ./scaffold-scripts-*.tgz
         
     - name: Test global commands and aliases
+      env:
+        SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-integration-global-${{ github.run_id }}
       run: |
         # Test that both main commands work globally
         scripts --version
@@ -218,6 +220,8 @@ jobs:
         echo "✅ All global alias tests passed"
         
     - name: Test complete alias workflow
+      env:
+        SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-integration-workflow-${{ github.run_id }}
       run: |
         # Create a test script
         echo '#!/bin/bash' > test-ci-script.sh
