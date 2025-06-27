@@ -54,11 +54,7 @@ jobs:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-aliases-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
 
       - name: Run all tests with coverage
-        continue-on-error: true
-        run: |
-          echo "Starting coverage tests on ${{ matrix.os }} with Node ${{ matrix.node-version }}"
-          echo "Database path: $SCAFFOLD_SCRIPTS_DB_DIR"
-          npm run test:coverage || echo "Coverage tests failed but continuing..."
+        run: npm run test:coverage
         timeout-minutes: 15
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
