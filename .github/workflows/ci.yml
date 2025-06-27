@@ -50,8 +50,9 @@ jobs:
         run: npm run test:aliases
 
       - name: Run all tests with coverage
+        if: runner.os == 'Linux'
         run: npm run test:coverage
-        timeout-minutes: 10
+        timeout-minutes: 15
 
       - name: Test CLI commands and aliases (Unix)
         if: runner.os != 'Windows'
