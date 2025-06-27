@@ -257,6 +257,14 @@ async function addCommand(name: string, scriptPath: string, options: any) {
     await db.addCommand(command);
     
     console.log(chalk.green(`\n✅ Added script "${name}"`));
+    
+    // Show usage examples
+    console.log(chalk.blue(`\n🚀 Usage Examples:`));
+    console.log(chalk.cyan(`   scripts ${name}                    # Run the script`));
+    console.log(chalk.cyan(`   scripts ${name} arg1 arg2         # Run with arguments`));
+    console.log(chalk.cyan(`   scripts view ${name}              # View script details`));
+    console.log(chalk.cyan(`   scripts remove ${name}            # Remove this script`));
+    console.log(chalk.cyan(`   scripts list                      # List all scripts`));
 
     // Show platform compatibility info
     const compatibility = processor.validatePlatformCompatibility(command as any, process.platform);
@@ -349,6 +357,12 @@ async function updateCommand(name: string, scriptPath: string, options: any) {
     const success = await db.updateCommand(name, updates);
     if (success) {
       console.log(chalk.green(`\n✅ Updated script "${name}"`));
+      
+      // Show usage examples
+      console.log(chalk.blue(`\n🚀 Usage Examples:`));
+      console.log(chalk.cyan(`   scripts ${name}                    # Run the updated script`));
+      console.log(chalk.cyan(`   scripts ${name} arg1 arg2         # Run with arguments`));
+      console.log(chalk.cyan(`   scripts view ${name}              # View script details`));
 
       // Show platform compatibility info for updated command
       const updatedCommand = { ...existing, ...updates } as ScaffoldCommand;
