@@ -80,14 +80,14 @@ export function removeAllScripts(): void {
  * Setup for each test - ensures clean state
  */
 export function setupTest(): void {
-  removeAllScripts();
+  cleanTestDatabase();
 }
 
 /**
  * Cleanup after each test - ensures no leftovers
  */
 export function cleanupTest(): void {
-  removeAllScripts();
+  cleanTestDatabase();
 }
 
 /**
