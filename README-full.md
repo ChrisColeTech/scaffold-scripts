@@ -30,6 +30,46 @@ irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/script
 - **Speed typing:** `scripts a`, `scripts l`, `scripts s` - Fastest option  
 - **Alternative:** `scaffold add`, `scaffold list` - If you prefer to match the package name
 
+## 🚀 Interactive Mode
+
+Just type `scripts` with no arguments to launch the interactive menu:
+
+```bash
+scripts
+```
+
+**What happens:**
+- Shows all your registered scripts with descriptions and aliases
+- Arrow keys to navigate, Enter to select
+- Run any script instantly without remembering names
+- Quick access to management commands (list, add help, exit)
+
+**Perfect for:**
+- Discovering scripts you forgot about
+- Running scripts without typing exact names
+- Exploring what's available in your script library
+- Quick script execution with visual selection
+
+**Example interactive session:**
+```bash
+$ scripts
+
+🚀 Available Scripts:
+❯ setup-react (react) - Creates new React TypeScript project with Vite
+  api-setup (api) - Express TypeScript API with security middleware
+  postgres-setup (db) [unix] - PostgreSQL with Docker Compose
+  deploy (d) - Full-stack deployment to staging/production
+  backup - Daily file backup automation
+  ──────────────────────────────────────────────────────────
+  📋 List all scripts
+  📦 Add new script
+  ✖ Exit
+
+Select a script to run:
+```
+
+Use arrow keys to select any script and press Enter to run it, or choose management options at the bottom.
+
 ## 🔄 The Workflow (Crystal Clear)
 
 1. **Get a script** → From AI, documentation, GitHub, or write your own
