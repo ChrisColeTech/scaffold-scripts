@@ -48,6 +48,7 @@
     "commander": "^11.1.0",
     "ora": "^5.4.1",
     "prompts": "^2.4.2",
+    "scaffold-scripts": "^3.0.16",
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
