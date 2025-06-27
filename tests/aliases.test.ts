@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import { join } from 'path';
 import { writeFileSync, rmSync, mkdtempSync } from 'fs';
 import { tmpdir } from 'os';
+import { setupTest, cleanupTest } from './test-isolation';
 
 const CLI_PATH = join(__dirname, '..', 'dist', 'index.js');
 
@@ -26,6 +27,14 @@ describe('CLI Aliases - Production Testing', () => {
     tempDir = mkdtempSync(join(tmpdir(), 'scaffold-alias-test-'));
     testScriptPath = join(tempDir, 'test-script.sh');
     writeFileSync(testScriptPath, '#!/bin/bash\necho "test script for aliases"');
+  });
+
+  beforeEach(() => {
+    setupTest();
+  });
+
+  afterEach(() => {
+    cleanupTest();
   });
 
   afterAll(() => {
