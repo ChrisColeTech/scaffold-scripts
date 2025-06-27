@@ -23,7 +23,7 @@ const processor = new ScriptProcessor();
 program
   .name('scaffold')
   .description('CLI tool for managing and executing scaffold scripts')
-  .version(packageJson.version);
+  .version(packageJson.version, '-v, --version', 'display version number');
 
 // Main scaffolding commands
 program
@@ -112,7 +112,7 @@ program
 // View command
 program
   .command('view')
-  .alias('v')
+  .alias('s')
   .description('view script details')
   .argument('<name>', 'script name')
   .action(async (name) => {
