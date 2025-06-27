@@ -26,19 +26,19 @@ irm https://raw.githubusercontent.com/ChrisColeTech/scaffold-scripts/main/script
 | `scripts view` | `scripts v` / `scaffold view` | View script details | `scripts view setup` |
 
 **Choose your style:**
-- **Full commands:** `scripts add`, `scripts list` - Crystal clear and readable
-- **Speed typing:** `scripts a`, `scripts l`, `scripts v` - Faster option  
-- **Alternative:** `scaffold add`, `scaffold list` - Shorter commands
+- **Full commands:** `scripts add`, `scripts list` - Clear, descriptive, and shorter to type
+- **Speed typing:** `scripts a`, `scripts l`, `scripts v` - Fastest option  
+- **Alternative:** `scaffold add`, `scaffold list` - If you prefer to match the package name
 
 ## 🔄 The Workflow (Crystal Clear)
 
-1. **Ask AI** → Use any prompt to describe what you want (see examples below)
-2. **Save script** → Copy AI's response to a file on your computer  
+1. **Get a script** → From AI, documentation, GitHub, or write your own
+2. **Save locally** → Copy to a file on your computer (any extension)
 3. **Add to scaffold** → `scripts add script-name file.sh`
-4. **Run anywhere** → `scripts script-name`
+4. **Run from anywhere** → `scripts script-name` (no more hunting for files)
 
 ```bash
-# Example: AI gives you a setup script, you save it to setup.sh
+# Example: You got a setup script from ChatGPT, save it to setup.sh
 scripts add setup setup.sh
 scripts setup my-project
 ```
@@ -50,11 +50,11 @@ scripts a setup setup.sh
 scripts setup my-project
 ```
 
-**What's happening in this complete example:** This shows the same workflow using two different command styles. In the first version, `scripts` is the full command name for maximum clarity, `add` is the subcommand that registers scripts, `setup` becomes your custom script name, and `setup.sh` is your actual file. Then `scripts setup my-project` runs that registered script with "my-project" as an argument. The speed version uses `scripts a` (short alias for "add") to do exactly the same thing but with less typing - perfect when you're working fast and frequently.
+**The real problem this solves:** You get scripts from AI, GitHub, Stack Overflow, or write them yourself. Instead of remembering file paths and directories, you register them once with a memorable name. Then run `scripts setup my-project` from anywhere - no more `cd ~/scripts && ./setup.sh my-project` or hunting through folders.
 
-## 🤖 Example AI Prompts
+## 🤖 Example AI Prompts for Getting Scripts
 
-**Here are example prompts to get you started. Customize them for your needs:**
+**Use these prompts with ChatGPT, Claude, or any AI to get useful scripts:**
 
 ### Example 1: Project Setup Script
 

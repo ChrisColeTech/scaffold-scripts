@@ -32,23 +32,23 @@ scripts list
 | `scripts view` | `scripts v` / `scaffold view` | View script details |
 
 **Speed shortcuts:** Use `scripts a`, `scripts l`, `scripts r`, `scripts u`, `scripts v` for faster typing.  
-**Alternative:** Use `scaffold` instead of `scripts` for shorter commands.
+**Alternative:** Use `scaffold` if you prefer to match the package name.
 
 ## The Workflow
 
-1. **Ask AI** → Get a script from ChatGPT/Claude for any task
+1. **Get a script** → From AI, GitHub, docs, or write your own
 2. **Save locally** → Copy to a `.sh`, `.py`, `.js`, or `.ps1` file  
 3. **Add to scaffold** → `scripts add script-name file.sh`
-4. **Run anywhere** → `scripts script-name`
+4. **Run from anywhere** → `scripts script-name` (no more hunting for files)
 
 ## Examples
 
 ```bash
-# AI gives you a React setup script
+# You got a React setup script from ChatGPT/Claude
 scripts add react-setup setup.sh
 scripts react-setup my-app
 
-# AI gives you a deployment script  
+# You found a deployment script on GitHub  
 scripts add deploy deploy.py
 scripts deploy staging
 ```
@@ -59,10 +59,10 @@ Shell (`.sh`, `.bash`), Python (`.py`), JavaScript (`.js`, `.ts`), PowerShell (`
 
 ## Why Use This?
 
-- ✅ **AI writes better scripts** than you manually typing commands
-- ✅ **Run from anywhere** - no more hunting for script files
+- ✅ **No more hunting for files** - run scripts from anywhere with one command
+- ✅ **Perfect for AI-generated scripts** - easily save and run scripts from ChatGPT/Claude
 - ✅ **Cross-platform** - works on Windows, Mac, Linux
-- ✅ **Simple** - just add script, run script, done
+- ✅ **Simple workflow** - add once, run anywhere
 
 ## Documentation
 
