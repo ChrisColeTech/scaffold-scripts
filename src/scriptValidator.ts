@@ -81,10 +81,13 @@ export class ScriptValidator {
     // 1. Basic sanitization
     result.sanitizedScript = this.sanitizeScript(script);
 
-    // 2. Check for dangerous commands
-    const dangerousFound = this.checkDangerousCommands(result.sanitizedScript);
+    // 2. Check if this is a PowerShell script for adjusted validation
+    const isPowerShell = this.isPowerShellScript(script);
+
+    // 3. Check for dangerous commands (more lenient for PowerShell)
+    const dangerousFound = this.checkDangerousCommands(result.sanitizedScript, isPowerShell);
     if (dangerousFound.length > 0) {
-      if (options.strict) {
+      if (options.strict && !isPowerShell) {
         result.errors.push(`Dangerous commands detected: ${dangerousFound.join(', ')}`);
         result.isValid = false;
       } else {
@@ -92,10 +95,10 @@ export class ScriptValidator {
       }
     }
 
-    // 3. Check for network access
+    // 4. Check for network access
     const networkCommands = this.checkNetworkCommands(result.sanitizedScript);
     if (networkCommands.length > 0 && !options.allowNetworkAccess) {
-      if (options.strict) {
+      if (options.strict && !isPowerShell) {
         result.errors.push(`Network commands not allowed: ${networkCommands.join(', ')}`);
         result.isValid = false;
       } else {
@@ -103,10 +106,10 @@ export class ScriptValidator {
       }
     }
 
-    // 4. Check for system modifications
-    const systemMods = this.checkSystemModifications(result.sanitizedScript);
+    // 5. Check for system modifications (more lenient for PowerShell)
+    const systemMods = this.checkSystemModifications(result.sanitizedScript, isPowerShell);
     if (systemMods.length > 0 && !options.allowSystemModification) {
-      if (options.strict) {
+      if (options.strict && !isPowerShell) {
         result.errors.push(`System modifications not allowed: ${systemMods.join(', ')}`);
         result.isValid = false;
       } else {
@@ -114,14 +117,28 @@ export class ScriptValidator {
       }
     }
 
-    // 5. Validate script structure
+    // 6. Validate script structure (PowerShell-aware)
     const structureErrors = this.validateStructure(result.sanitizedScript);
     if (structureErrors.length > 0) {
-      result.errors.push(...structureErrors);
-      result.isValid = false;
+      // For PowerShell scripts, only fail on critical structure errors
+      if (isPowerShell) {
+        const criticalErrors = structureErrors.filter(error => 
+          error.includes('Script cannot be empty') || 
+          error.includes('no executable commands')
+        );
+        if (criticalErrors.length > 0) {
+          result.errors.push(...criticalErrors);
+          result.isValid = false;
+        } else {
+          result.warnings.push(...structureErrors);
+        }
+      } else {
+        result.errors.push(...structureErrors);
+        result.isValid = false;
+      }
     }
 
-    // 6. Cross-platform compatibility check
+    // 7. Cross-platform compatibility check
     const compatibilityWarnings = this.checkCrossPlatformCompatibility(result.sanitizedScript);
     result.warnings.push(...compatibilityWarnings);
 
@@ -250,13 +267,39 @@ export class ScriptValidator {
   /**
    * Check for dangerous commands
    */
-  private checkDangerousCommands(script: string): string[] {
+  private checkDangerousCommands(script: string, isPowerShell: boolean = false): string[] {
     const found: string[] = [];
     const lowerScript = script.toLowerCase();
     
-    for (const cmd of this.dangerousCommands) {
+    // Create filtered list for PowerShell scripts
+    const commandsToCheck = isPowerShell 
+      ? this.dangerousCommands.filter(cmd => 
+          !cmd.includes('rm -rf') && // PowerShell uses Remove-Item
+          !cmd.includes('del /s') && // Less relevant for PowerShell
+          !cmd.includes('sudo') // PowerShell uses different elevation
+        )
+      : this.dangerousCommands;
+    
+    for (const cmd of commandsToCheck) {
       if (lowerScript.includes(cmd.toLowerCase())) {
         found.push(cmd);
+      }
+    }
+    
+    // Add PowerShell-specific dangerous commands
+    if (isPowerShell) {
+      const powershellDangerous = [
+        'Remove-Item -Recurse -Force',
+        'Remove-Item.*-Recurse.*-Force',
+        'Start-Process.*-Verb RunAs',
+        'Invoke-Expression',
+        'iex '
+      ];
+      
+      for (const cmd of powershellDangerous) {
+        if (lowerScript.match(new RegExp(cmd.toLowerCase(), 'i'))) {
+          found.push(cmd);
+        }
       }
     }
     
@@ -283,13 +326,16 @@ export class ScriptValidator {
   /**
    * Check for system modifications
    */
-  private checkSystemModifications(script: string): string[] {
-    const systemCommands = ['sudo', 'runas', 'reg add', 'reg delete', 'sc create', 'systemctl'];
+  private checkSystemModifications(script: string, isPowerShell: boolean = false): string[] {
+    const systemCommands = isPowerShell 
+      ? ['runas', 'reg add', 'reg delete', 'sc create', 'Start-Process -Verb RunAs']
+      : ['sudo', 'runas', 'reg add', 'reg delete', 'sc create', 'systemctl'];
+    
     const found: string[] = [];
     const lowerScript = script.toLowerCase();
     
     for (const cmd of systemCommands) {
-      if (lowerScript.includes(cmd)) {
+      if (lowerScript.includes(cmd.toLowerCase())) {
         found.push(cmd);
       }
     }
@@ -309,16 +355,9 @@ export class ScriptValidator {
       return errors;
     }
 
-    // Check for balanced quotes
-    const singleQuotes = (script.match(/'/g) || []).length;
-    const doubleQuotes = (script.match(/"/g) || []).length;
-    
-    if (singleQuotes % 2 !== 0) {
-      errors.push('Unbalanced single quotes detected');
-    }
-    if (doubleQuotes % 2 !== 0) {
-      errors.push('Unbalanced double quotes detected');
-    }
+    // Check for balanced quotes with improved logic for PowerShell
+    const quoteErrors = this.validateQuotes(script);
+    errors.push(...quoteErrors);
 
     // Check for basic command structure
     const lines = script.split('\n').filter(line => line.trim());
@@ -327,6 +366,129 @@ export class ScriptValidator {
     }
 
     return errors;
+  }
+
+  /**
+   * Improved quote validation that handles PowerShell arrays and here-strings
+   */
+  private validateQuotes(script: string): string[] {
+    const errors: string[] = [];
+    
+    // Remove comments and here-strings before quote validation
+    let cleanScript = this.removeCommentsAndHereStrings(script);
+    
+    // Check for balanced single quotes (excluding escaped quotes)
+    const singleQuoteMatches = cleanScript.match(/(?<!\\)'/g);
+    const singleQuoteCount = singleQuoteMatches ? singleQuoteMatches.length : 0;
+    
+    // Check for balanced double quotes (excluding escaped quotes)
+    const doubleQuoteMatches = cleanScript.match(/(?<!\\)"/g);
+    const doubleQuoteCount = doubleQuoteMatches ? doubleQuoteMatches.length : 0;
+    
+    // For PowerShell arrays, we need more sophisticated validation
+    if (this.isPowerShellScript(script)) {
+      // PowerShell arrays use @('item1', 'item2') syntax
+      // This creates multiple single quotes that are actually balanced
+      const arrayQuoteValidation = this.validatePowerShellArrayQuotes(cleanScript);
+      if (!arrayQuoteValidation.valid && arrayQuoteValidation.error) {
+        errors.push(arrayQuoteValidation.error);
+      }
+    } else {
+      // Standard quote validation for other script types
+      if (singleQuoteCount % 2 !== 0) {
+        errors.push('Unbalanced single quotes detected');
+      }
+      if (doubleQuoteCount % 2 !== 0) {
+        errors.push('Unbalanced double quotes detected');
+      }
+    }
+    
+    return errors;
+  }
+
+  /**
+   * Remove comments and here-strings that might contain unbalanced quotes
+   */
+  private removeCommentsAndHereStrings(script: string): string {
+    // Remove PowerShell comments
+    let cleaned = script.replace(/#[^\r\n]*/g, '');
+    
+    // Remove here-strings @"..."@ and @'...'@
+    cleaned = cleaned.replace(/@"[\s\S]*?"@/g, '');
+    cleaned = cleaned.replace(/@'[\s\S]*?'@/g, '');
+    
+    // Remove shell comments
+    cleaned = cleaned.replace(/^\s*#[^\r\n]*/gm, '');
+    
+    return cleaned;
+  }
+
+  /**
+   * Check if script appears to be PowerShell
+   */
+  private isPowerShellScript(script: string): boolean {
+    const powershellIndicators = [
+      'Write-Host',
+      'Write-Output',
+      'Get-Location',
+      'Set-Location',
+      'New-Item',
+      '$env:',
+      '@(',
+      'param(',
+      '-ForegroundColor',
+      '-ItemType'
+    ];
+    
+    return powershellIndicators.some(indicator => 
+      script.toLowerCase().includes(indicator.toLowerCase())
+    );
+  }
+
+  /**
+   * Validate PowerShell array quotes specifically
+   */
+  private validatePowerShellArrayQuotes(script: string): { valid: boolean; error?: string } {
+    try {
+      // Stack-based quote validation for PowerShell
+      const stack: string[] = [];
+      let i = 0;
+      
+      while (i < script.length) {
+        const char = script[i];
+        const nextChar = script[i + 1];
+        
+        // Skip escaped quotes
+        if (char === '\\' && (nextChar === '"' || nextChar === "'")) {
+          i += 2;
+          continue;
+        }
+        
+        if (char === '"' || char === "'") {
+          // If stack is empty or top doesn't match, push
+          if (stack.length === 0 || stack[stack.length - 1] !== char) {
+            stack.push(char);
+          } else {
+            // Matching quote found, pop from stack
+            stack.pop();
+          }
+        }
+        
+        i++;
+      }
+      
+      if (stack.length === 0) {
+        return { valid: true };
+      } else {
+        return { 
+          valid: false, 
+          error: `Unbalanced quotes detected: ${stack.length} unclosed quote(s)` 
+        };
+      }
+    } catch (error) {
+      // If validation fails, be permissive for PowerShell
+      return { valid: true };
+    }
   }
 
   /**

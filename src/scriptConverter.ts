@@ -109,47 +109,112 @@ export class AdvancedScriptConverter {
    * Convert PowerShell script to Shell
    */
   private convertPowerShellToShell(script: string): string {
-    return script
-      // Directory operations
-      .replace(/New-Item -ItemType Directory -Force -Path\s+"?([^"\\s]+)"?/g, 'mkdir -p "$1"')
-      .replace(/New-Item -ItemType Directory -Path\s+"?([^"\\s]+)"?/g, 'mkdir -p "$1"')
-      .replace(/Remove-Item -Recurse -Force -Path\s+"?([^"\\s]+)"?/g, 'rm -rf "$1"')
-      .replace(/Remove-Item -Path\s+"?([^"\\s]+)"?/g, 'rm "$1"')
+    let converted = script;
+    
+    // Handle PowerShell arrays first
+    converted = this.convertPowerShellArrays(converted);
+    
+    // Handle PowerShell conditionals and try/catch blocks
+    converted = this.convertPowerShellControlFlow(converted);
+    
+    // Standard PowerShell command conversions
+    converted = converted
+      // Directory operations with better parameter handling
+      .replace(/New-Item\s+-ItemType\s+Directory\s+-Force\s+-Path\s+"?([^"\\s]+)"?(?:\s+\|\s+Out-Null)?/gi, 'mkdir -p "$1"')
+      .replace(/New-Item\s+-ItemType\s+Directory\s+-Path\s+"?([^"\\s]+)"?(?:\s+\|\s+Out-Null)?/gi, 'mkdir -p "$1"')
+      .replace(/Remove-Item\s+-Recurse\s+-Force\s+-Path\s+"?([^"\\s]+)"?/gi, 'rm -rf "$1"')
+      .replace(/Remove-Item\s+-Path\s+"?([^"\\s]+)"?/gi, 'rm "$1"')
       
-      // File operations
-      .replace(/New-Item -ItemType File -Force -Path\s+"?([^"\\s]+)"?/g, 'touch "$1"')
-      .replace(/Copy-Item -Path\s+"?([^"\\s]+)"? -Destination\s+"?([^"\\s]+)"?/g, 'cp "$1" "$2"')
-      .replace(/Move-Item -Path\s+"?([^"\\s]+)"? -Destination\s+"?([^"\\s]+)"?/g, 'mv "$1" "$2"')
+      // File operations with parameter variations
+      .replace(/New-Item\s+-ItemType\s+File\s+-Force\s+-Path\s+"?([^"\\s]+)"?(?:\s+\|\s+Out-Null)?/gi, 'touch "$1"')
+      .replace(/Copy-Item\s+-Path\s+"?([^"\\s]+)"?\s+-Destination\s+"?([^"\\s]+)"?/gi, 'cp "$1" "$2"')
+      .replace(/Move-Item\s+-Path\s+"?([^"\\s]+)"?\s+-Destination\s+"?([^"\\s]+)"?/gi, 'mv "$1" "$2"')
       
-      // Output and text operations
-      .replace(/Write-Output\s+"([^"]+)"/g, 'echo "$1"')
-      .replace(/Write-Output\s+'([^']+)'/g, "echo '$1'")
-      .replace(/Write-Output\s+([^\\s;]+)/g, 'echo $1')
-      .replace(/Write-Host\s+"([^"]+)"/g, 'echo "$1"')
-      .replace(/Write-Host\s+'([^']+)'/g, "echo '$1'")
-      .replace(/Write-Host\s+([^\\s;]+)/g, 'echo $1')
-      .replace(/Get-Content -Path\s+"?([^"\\s]+)"?/g, 'cat "$1"')
+      // Output operations with color parameters
+      .replace(/Write-Host\s+"([^"]+)"\s+-ForegroundColor\s+\w+/gi, 'echo "$1"')
+      .replace(/Write-Host\s+'([^']+)'\s+-ForegroundColor\s+\w+/gi, "echo '$1'")
+      .replace(/Write-Host\s+"([^"]+)"\s+-NoNewline\s+-ForegroundColor\s+\w+/gi, 'printf "$1"')
+      .replace(/Write-Output\s+"([^"]+)"/gi, 'echo "$1"')
+      .replace(/Write-Output\s+'([^']+)'/gi, "echo '$1'")
+      .replace(/Write-Output\s+([^\\s;]+)/gi, 'echo $1')
+      .replace(/Write-Host\s+"([^"]+)"/gi, 'echo "$1"')
+      .replace(/Write-Host\s+'([^']+)'/gi, "echo '$1'")
+      .replace(/Write-Host\s+([^\\s;]+)/gi, 'echo $1')
+      .replace(/Get-Content\s+-Path\s+"?([^"\\s]+)"?/gi, 'cat "$1"')
       
-      // Listing and finding
-      .replace(/Get-ChildItem -Path\s+"?([^"\\s]+)"?/g, 'ls "$1"')
-      .replace(/Get-ChildItem$/g, 'ls')
-      .replace(/Get-ChildItem -Path\s+"?([^"\\s]+)"? -Name\s+"?([^"\\s]+)"? -Recurse/g, 'find "$1" -name "$2"')
-      .replace(/Select-String -Pattern\s+"?([^"\\s]+)"? -Path\s+"?([^"\\s]+)"?/g, 'grep "$1" "$2"')
+      // Listing and finding with better parameter handling
+      .replace(/Get-ChildItem\s+-Path\s+"?([^"\\s]+)"?\s+-Recurse\s+-Force/gi, 'find "$1" -type f')
+      .replace(/Get-ChildItem\s+-Path\s+"?([^"\\s]+)"?/gi, 'ls "$1"')
+      .replace(/Get-ChildItem(?:\s+|$)/gi, 'ls')
+      .replace(/Select-String\s+-Pattern\s+"?([^"\\s]+)"?\s+-Path\s+"?([^"\\s]+)"?/gi, 'grep "$1" "$2"')
       
-      // Environment and system
-      .replace(/\$env:([A-Z_]+)="([^"]+)"/g, 'export $1="$2"')
-      .replace(/\$env:([A-Z_]+)/g, '$$$1')
-      .replace(/Get-Command\s+"?([^"\\s]+)"?/g, 'which "$1"')
-      .replace(/\$env:USERNAME/g, '$(whoami)')
-      .replace(/Get-Location/g, 'pwd')
+      // Environment and system with better variable handling
+      .replace(/\$env:([A-Z_]+)\s*=\s*"([^"]+)"/gi, 'export $1="$2"')
+      .replace(/\$env:([A-Z_]+)/gi, '$$$1')
+      .replace(/Get-Command\s+"?([^"\\s]+)"?/gi, 'which "$1"')
+      .replace(/\$env:USERNAME/gi, '$(whoami)')
+      .replace(/Get-Location/gi, 'pwd')
       
-      // Control flow
-      .replace(/;\s*if\s*\(\$\?\)\s*\{/g, ' &&')
-      .replace(/\}\s*else\s*\{/g, ' ||')
-      .replace(/\}/g, '') // Remove remaining braces
+      // PowerShell-specific variable syntax
+      .replace(/\$([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*Get-Location/gi, '$1=$(pwd)')
+      .replace(/\$([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*Read-Host/gi, 'read -p "Enter value: " $1')
+      
+      // PowerShell Set-Location to cd
+      .replace(/Set-Location\s+"?([^"\\s]+)"?/gi, 'cd "$1"')
+      .replace(/Set-Location\s+\$([a-zA-Z_][a-zA-Z0-9_]*)/gi, 'cd "$$1"')
+      
+      // PowerShell Test-Path to file test
+      .replace(/Test-Path\s+"?([^"\\s]+)"?/gi, '[ -e "$1" ]')
+      .replace(/-not\s+\(Test-Path\s+"?([^"\\s]+)"?\)/gi, '[ ! -e "$1" ]')
       
       // Path separators
-      .replace(/\\\\/g, '/');
+      .replace(/\\\\/gi, '/');
+    
+    return converted;
+  }
+
+  /**
+   * Convert PowerShell arrays to shell arrays
+   */
+  private convertPowerShellArrays(script: string): string {
+    // Convert PowerShell array syntax @('item1', 'item2') to shell array
+    return script.replace(/@\(\s*([^)]+)\s*\)/g, (match, items) => {
+      // Split items and clean them up
+      const itemList = items.split(',').map((item: string) => item.trim());
+      return '(' + itemList.join(' ') + ')';
+    });
+  }
+
+  /**
+   * Convert PowerShell control flow to shell equivalents
+   */
+  private convertPowerShellControlFlow(script: string): string {
+    let converted = script;
+    
+    // Convert PowerShell if statements
+    converted = converted.replace(/if\s*\(\s*([^)]+)\s*\)\s*\{/gi, 'if [ $1 ]; then');
+    
+    // Convert PowerShell try/catch blocks
+    converted = converted.replace(/try\s*\{/gi, '# try block - error handling in shell:');
+    converted = converted.replace(/\}\s*catch\s*\{/gi, '# catch block:');
+    converted = converted.replace(/catch\s*\{([^}]+)\}/gi, '# error handler: $1');
+    
+    // Convert PowerShell foreach loops
+    converted = converted.replace(/foreach\s*\(\s*\$([^\\s]+)\s+in\s+\$([^)]+)\)\s*\{/gi, 'for $1 in $$2; do');
+    
+    // Convert PowerShell string tests
+    converted = converted.replace(/\[string\]::IsNullOrWhiteSpace\(\$([^)]+)\)/gi, '[ -z "$$1" ]');
+    
+    // Convert exit statements
+    converted = converted.replace(/exit\s+(\d+)/gi, 'exit $1');
+    
+    // Convert PowerShell else statements
+    converted = converted.replace(/\}\s*else\s*\{/gi, 'else');
+    
+    // Clean up remaining braces
+    converted = converted.replace(/\}/gi, 'fi').replace(/fi\s*fi/gi, 'fi');
+    
+    return converted;
   }
 
   /**
