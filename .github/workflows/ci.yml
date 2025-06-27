@@ -164,15 +164,33 @@ jobs:
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-cli-windows-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
         run: |
+          Write-Host "🔍 Debug: Starting Windows CLI tests"
+          Write-Host "Database dir: $env:SCAFFOLD_SCRIPTS_DB_DIR"
+          
           # Test basic commands that should succeed
+          Write-Host "Testing --help..."
           node dist/index.js --help
-          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ($LASTEXITCODE -ne 0) { 
+            Write-Host "ERROR: --help failed with exit code $LASTEXITCODE"
+            exit 1 
+          }
+          Write-Host "✅ --help passed"
           
+          Write-Host "Testing --version..."
           node dist/index.js --version  
-          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ($LASTEXITCODE -ne 0) { 
+            Write-Host "ERROR: --version failed with exit code $LASTEXITCODE"
+            exit 1 
+          }
+          Write-Host "✅ --version passed"
           
+          Write-Host "Testing list command..."
           node dist/index.js list
-          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ($LASTEXITCODE -ne 0) { 
+            Write-Host "ERROR: list failed with exit code $LASTEXITCODE"
+            exit 1 
+          }
+          Write-Host "✅ list passed"
           
           # Test that commands with missing args show proper error messages and exit 1
           Write-Host "Testing add command error handling..."
