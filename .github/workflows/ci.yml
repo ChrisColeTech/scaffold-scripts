@@ -97,9 +97,15 @@ jobs:
             Write-Host "Output: $addOutput"
             exit 1 
           }
-          if ($addOutput -notmatch "Missing required arguments") {
+          # Convert to string and check for error text
+          $outputString = $addOutput -join "`n"
+          if ($outputString -notmatch "Missing required arguments") {
             Write-Host "ERROR: add command should show 'Missing required arguments'"
-            Write-Host "Output: $addOutput"
+            Write-Host "Looking for: 'Missing required arguments'"
+            Write-Host "Full output string:"
+            Write-Host "'$outputString'"
+            Write-Host "Contains 'Error': $($outputString -match 'Error')"
+            Write-Host "Contains 'Missing': $($outputString -match 'Missing')"
             exit 1
           }
           
@@ -107,12 +113,11 @@ jobs:
           $aOutput = node dist/index.js a 2>&1
           if ($LASTEXITCODE -ne 1) {
             Write-Host "ERROR: 'a' alias should exit with status 1, got $LASTEXITCODE"
-            Write-Host "Output: $aOutput"
             exit 1
           }
-          if ($aOutput -notmatch "Missing required arguments") {
+          if (($aOutput -join "`n") -notmatch "Missing required arguments") {
             Write-Host "ERROR: 'a' alias should show 'Missing required arguments'"  
-            Write-Host "Output: $aOutput"
+            Write-Host "Output: $($aOutput -join "`n")"
             exit 1
           }
           
@@ -123,9 +128,9 @@ jobs:
             Write-Host "Output: $uOutput"
             exit 1
           }
-          if ($uOutput -notmatch "Missing required arguments") {
+          if (($uOutput -join "`n") -notmatch "Missing required arguments") {
             Write-Host "ERROR: 'u' alias should show 'Missing required arguments'"
-            Write-Host "Output: $uOutput"
+            Write-Host "Output: $($uOutput -join "`n")"
             exit 1
           }
           
@@ -136,9 +141,9 @@ jobs:
             Write-Host "Output: $rOutput"
             exit 1
           }
-          if ($rOutput -notmatch "Missing required arguments") {
+          if (($rOutput -join "`n") -notmatch "Missing required arguments") {
             Write-Host "ERROR: 'r' alias should show 'Missing required arguments'"
-            Write-Host "Output: $rOutput"
+            Write-Host "Output: $($rOutput -join "`n")"
             exit 1
           }
           
@@ -149,9 +154,9 @@ jobs:
             Write-Host "Output: $sOutput"
             exit 1
           }
-          if ($sOutput -notmatch "Missing required arguments") {
+          if (($sOutput -join "`n") -notmatch "Missing required arguments") {
             Write-Host "ERROR: 's' alias should show 'Missing required arguments'"
-            Write-Host "Output: $sOutput"
+            Write-Host "Output: $($sOutput -join "`n")"
             exit 1
           }
           
