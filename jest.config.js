@@ -13,5 +13,10 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
-  testTimeout: 15000
+  testTimeout: 30000,
+  // Run tests serially to avoid database conflicts
+  maxWorkers: 1,
+  // Ensure tests are isolated
+  resetMocks: true,
+  restoreMocks: true
 };

@@ -5,26 +5,45 @@
 
 import { execSync } from 'child_process';
 import { join } from 'path';
-import { existsSync, rmSync } from 'fs';
-import { homedir } from 'os';
+import { existsSync, rmSync, mkdirSync } from 'fs';
+import { homedir, tmpdir } from 'os';
 
-const CLI_PATH = join(__dirname, '..', 'dist', 'index.js');
+// Use a unique test database path to avoid conflicts
+const TEST_DB_DIR = join(tmpdir(), '.scaffold-scripts-test-' + process.pid + '-' + Date.now());
+
+// Export the test environment for use in tests
+export const TEST_ENV = { 
+  ...process.env, 
+  SCAFFOLD_SCRIPTS_DB_DIR: TEST_DB_DIR 
+};
+
+// Export CLI path and helper function
+export const CLI_PATH = join(__dirname, '..', 'dist', 'index.js');
+
+/**
+ * Execute CLI command with proper test environment
+ */
+export function execCLI(command: string, options: any = {}): any {
+  return execSync(`node ${CLI_PATH} ${command}`, {
+    ...options,
+    env: TEST_ENV
+  });
+}
 
 /**
  * Clean the test database completely
  */
 export function cleanTestDatabase(): void {
   try {
-    // Remove the database file if it exists
-    const dbPath = join(homedir(), '.scaffold-scripts', 'commands.db');
-    if (existsSync(dbPath)) {
-      rmSync(dbPath, { force: true });
+    // Clean the test-specific database directory
+    if (existsSync(TEST_DB_DIR)) {
+      rmSync(TEST_DB_DIR, { recursive: true, force: true });
     }
     
-    // Remove the entire directory if it exists
-    const scriptDir = join(homedir(), '.scaffold-scripts');
-    if (existsSync(scriptDir)) {
-      rmSync(scriptDir, { recursive: true, force: true });
+    // Also clean the default directory just in case
+    const defaultScriptDir = join(homedir(), '.scaffold-scripts');
+    if (existsSync(defaultScriptDir)) {
+      rmSync(defaultScriptDir, { recursive: true, force: true });
     }
   } catch (error) {
     // Ignore cleanup errors
@@ -36,7 +55,10 @@ export function cleanTestDatabase(): void {
  */
 export function getAllScripts(): string[] {
   try {
-    const result = execSync(`node ${CLI_PATH} list`, { encoding: 'utf8', stdio: 'pipe' });
+    const result = execCLI('list', { 
+      encoding: 'utf8', 
+      stdio: 'pipe'
+    });
     
     if (result.includes('No scripts available')) {
       return [];
@@ -69,7 +91,9 @@ export function removeAllScripts(): void {
   
   for (const script of scripts) {
     try {
-      execSync(`node ${CLI_PATH} remove ${script}`, { stdio: 'pipe' });
+      execCLI(`remove ${script}`, { 
+        stdio: 'pipe'
+      });
     } catch (error) {
       // Ignore removal errors
     }

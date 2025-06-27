@@ -10,7 +10,10 @@ import * as os from 'os';
  */
 export const config = {
   db: {
-    path: path.join(os.homedir(), '.scaffold-scripts', 'commands.db'),
+    path: path.join(
+      process.env.SCAFFOLD_SCRIPTS_DB_DIR || path.join(os.homedir(), '.scaffold-scripts'),
+      'commands.db'
+    ),
   },
   cli: {
     name: 'Scaffold-Scripts-CLI',

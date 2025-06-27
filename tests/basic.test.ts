@@ -5,9 +5,7 @@
 
 import { execSync } from 'child_process';
 import { join } from 'path';
-import { setupTest, cleanupTest } from './test-isolation';
-
-const CLI_PATH = join(__dirname, '..', 'dist', 'index.js');
+import { setupTest, cleanupTest, execCLI, CLI_PATH } from './test-isolation';
 
 describe('Scaffold Scripts CLI - Smoke Tests', () => {
   beforeAll(() => {
@@ -28,27 +26,27 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
   });
 
   it('should show help without crashing', () => {
-    const result = execSync(`node ${CLI_PATH} --help`, { encoding: 'utf8' });
+    const result = execCLI('--help', { encoding: 'utf8' });
     expect(result).toContain('scaffold');
   });
 
   it('should show version without crashing', () => {
-    const result = execSync(`node ${CLI_PATH} --version`, { encoding: 'utf8' });
+    const result = execCLI('--version', { encoding: 'utf8' });
     expect(result).toMatch(/\d+\.\d+\.\d+/);
   });
 
   it('should support -v for version', () => {
-    const result = execSync(`node ${CLI_PATH} -v`, { encoding: 'utf8' });
+    const result = execCLI('-v', { encoding: 'utf8' });
     expect(result).toMatch(/\d+\.\d+\.\d+/);
     
     // Test that -v and --version produce same output
-    const longResult = execSync(`node ${CLI_PATH} --version`, { encoding: 'utf8' });
+    const longResult = execCLI('--version', { encoding: 'utf8' });
     expect(result).toBe(longResult);
   });
 
   it('should handle list command without crashing', () => {
     expect(() => {
-      execSync(`node ${CLI_PATH} list`, { stdio: 'pipe' });
+      execCLI('list', { stdio: 'pipe' });
     }).not.toThrow();
   });
 
@@ -186,19 +184,19 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     
     try {
       // Test adding with alias 'a'
-      const addResult = execSync(`node ${CLI_PATH} a test-workflow "${scriptFile}"`, { encoding: 'utf8' });
+      const addResult = execCLI(`a test-workflow "${scriptFile}"`, { encoding: 'utf8' });
       expect(addResult).toContain('Added script "test-workflow"');
       
       // Test listing with alias 'l' shows our script
-      const listResult = execSync(`node ${CLI_PATH} l`, { encoding: 'utf8' });
+      const listResult = execCLI('l', { encoding: 'utf8' });
       expect(listResult).toContain('test-workflow');
       
       // Test removing with alias 'r'
-      const removeResult = execSync(`node ${CLI_PATH} r test-workflow`, { encoding: 'utf8' });
+      const removeResult = execCLI('r test-workflow', { encoding: 'utf8' });
       expect(removeResult).toContain('Removed script "test-workflow"');
       
       // Test listing again should not show our script
-      const listAfterRemove = execSync(`node ${CLI_PATH} l`, { encoding: 'utf8' });
+      const listAfterRemove = execCLI('l', { encoding: 'utf8' });
       expect(listAfterRemove).not.toContain('test-workflow');
       
     } finally {
