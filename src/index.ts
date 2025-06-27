@@ -10,6 +10,7 @@ import { ScriptExecutor } from './scriptExecutor.js'
 import { ScriptValidator } from './scriptValidator.js'
 import { ScriptProcessor } from './scriptProcessor.js'
 import { sym } from './symbols.js'
+import { UsageHelper } from './usageHelper.js'
 
 // Get version from package.json
 const packageJsonPath = join(__dirname, '..', 'package.json')
@@ -25,6 +26,53 @@ program
   .name('scaffold')
   .description('CLI tool for managing and executing scaffold scripts')
   .version(packageJson.version, '-v, --version', 'display version number')
+  .helpOption('-h, --help', 'display help for command')
+  .addHelpCommand('help [command]', 'display help for command')
+  .exitOverride() // Allow us to handle errors ourselves
+
+// Configure custom help
+program.configureHelp({
+  helpWidth: 80,
+  sortSubcommands: true
+});
+
+// Custom help display
+program.on('--help', () => {
+  UsageHelper.displayMainHelp();
+});
+
+// Global error handler for Commander.js
+program.configureOutput({
+  writeErr: (str) => {
+    // Intercept Commander errors and provide better messages
+    if (str.includes('missing required argument')) {
+      const match = str.match(/missing required argument '([^']+)'/);
+      if (match) {
+        const argName = match[1];
+        UsageHelper.displayError(`Missing required argument: ${argName}`, 'Check the command usage below');
+        return;
+      }
+    }
+    if (str.includes('unknown option')) {
+      const match = str.match(/unknown option '([^']+)'/);
+      if (match) {
+        const option = match[1];
+        UsageHelper.displayError(`Unknown option: ${option}`, 'Use --help to see available options');
+        return;
+      }
+    }
+    if (str.includes('unknown command')) {
+      const match = str.match(/unknown command '([^']+)'/);
+      if (match) {
+        const command = match[1];
+        UsageHelper.displayError(`Unknown command: ${command}`, 'Use --help to see available commands');
+        return;
+      }
+    }
+    // Default error output
+    process.stderr.write(str);
+  }
+});
 
 // Main scaffolding commands
 program.argument('[script-name]', 'run script with specified name').action(async (scriptName) => {
@@ -46,8 +94,7 @@ program.argument('[script-name]', 'run script with specified name').action(async
       }
 
       if (selectedScript === 'add') {
-        console.log(chalk.blue('To add a script, use: scripts add <name> <script-path>'))
-        console.log(chalk.gray('Example: scripts add my-script ./my-script.sh'))
+        UsageHelper.displayCommandHelp('add');
         return
       }
 
@@ -60,7 +107,7 @@ program.argument('[script-name]', 'run script with specified name').action(async
       await handleScriptCommand(selectedScript, false)
     }
   } catch (error: any) {
-    console.error(chalk.red(`Error: ${error.message}`))
+    UsageHelper.displayError(error.message, 'Check your command syntax and try again');
     process.exit(1)
   }
 })
@@ -75,11 +122,21 @@ program
   .option('-p, --platform <platform>', 'target platform: all, windows, or unix', 'all')
   .option('--strict', 'use strict validation')
   .option('--no-validate', 'skip validation (use with caution)')
+  .on('--help', () => {
+    UsageHelper.displayCommandHelp('add');
+  })
   .action(async (name, scriptPath, options) => {
     try {
+      // Validate arguments
+      if (!name || !scriptPath) {
+        UsageHelper.displayError('Missing required arguments', 'Use: scripts add <name> <script-path>');
+        UsageHelper.displayCommandHelp('add');
+        process.exit(1);
+      }
+      
       await addCommand(name, scriptPath, options)
     } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+      UsageHelper.displayError(error.message, 'Check your script path and try again');
       process.exit(1)
     }
   })
@@ -93,11 +150,21 @@ program
   .argument('<scriptPath>', 'path to new script file')
   .option('-p, --platform <platform>', 'update target platform')
   .option('--strict', 'use strict validation')
+  .on('--help', () => {
+    UsageHelper.displayCommandHelp('update');
+  })
   .action(async (name, scriptPath, options) => {
     try {
+      // Validate arguments
+      if (!name || !scriptPath) {
+        UsageHelper.displayError('Missing required arguments', 'Use: scripts update <name> <script-path>');
+        UsageHelper.displayCommandHelp('update');
+        process.exit(1);
+      }
+      
       await updateCommand(name, scriptPath, options)
     } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+      UsageHelper.displayError(error.message, 'Check that the script exists and path is correct');
       process.exit(1)
     }
   })
@@ -108,11 +175,21 @@ program
   .alias('r')
   .description('remove a script')
   .argument('<name>', 'script name')
+  .on('--help', () => {
+    UsageHelper.displayCommandHelp('remove');
+  })
   .action(async (name) => {
     try {
+      // Validate arguments
+      if (!name) {
+        UsageHelper.displayError('Missing required argument', 'Use: scripts remove <name>');
+        UsageHelper.displayCommandHelp('remove');
+        process.exit(1);
+      }
+      
       await removeCommand(name)
     } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+      UsageHelper.displayError(error.message, 'Check that the script name is correct');
       process.exit(1)
     }
   })
@@ -123,11 +200,14 @@ program
   .alias('l')
   .description('list available scripts')
   .option('-d, --detailed', 'show detailed information')
+  .on('--help', () => {
+    UsageHelper.displayCommandHelp('list');
+  })
   .action(async (options) => {
     try {
       await listCommands(options.detailed)
     } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+      UsageHelper.displayError(error.message, 'Unable to retrieve script list');
       process.exit(1)
     }
   })
@@ -138,11 +218,21 @@ program
   .alias('s')
   .description('view script details')
   .argument('<name>', 'script name')
+  .on('--help', () => {
+    UsageHelper.displayCommandHelp('view');
+  })
   .action(async (name) => {
     try {
+      // Validate arguments
+      if (!name) {
+        UsageHelper.displayError('Missing required argument', 'Use: scripts view <name>');
+        UsageHelper.displayCommandHelp('view');
+        process.exit(1);
+      }
+      
       await handleScriptCommand(name, true)
     } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+      UsageHelper.displayError(error.message, 'Check that the script name is correct');
       process.exit(1)
     }
   })
@@ -152,11 +242,21 @@ program
   .command('export')
   .description('export all scripts to a directory')
   .argument('<directory>', 'directory to export scripts to')
+  .on('--help', () => {
+    UsageHelper.displayCommandHelp('export');
+  })
   .action(async (directory) => {
     try {
+      // Validate arguments
+      if (!directory) {
+        UsageHelper.displayError('Missing required argument', 'Use: scripts export <directory>');
+        UsageHelper.displayCommandHelp('export');
+        process.exit(1);
+      }
+      
       await exportCommand(directory)
     } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+      UsageHelper.displayError(error.message, 'Check that the directory path is valid and writable');
       process.exit(1)
     }
   })
@@ -169,7 +269,7 @@ program
     try {
       await uninstallCommand()
     } catch (error: any) {
-      console.error(chalk.red(`Error: ${error.message}`))
+      UsageHelper.displayError(error.message, 'Try manual uninstallation or check the documentation');
       process.exit(1)
     }
   })
@@ -240,18 +340,9 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
   }
 
   if (!command) {
-    console.error(chalk.red(`Script "${scriptName}" not found.`))
-    console.log(chalk.yellow(`\nAvailable scripts:`))
     const commands = await db.listCommands()
-    if (commands.length === 0) {
-      console.log(chalk.gray(`  No scripts available.`))
-      console.log(chalk.yellow(`\nAdd one with: scaffold add ${scriptName} /path/to/script.txt`))
-    } else {
-      commands.forEach((cmd) => {
-        const alias = cmd.alias ? ` (${cmd.alias})` : ''
-        console.log(chalk.cyan(`  • ${cmd.name}${alias}`))
-      })
-    }
+    const scriptNames = commands.map(cmd => cmd.name)
+    UsageHelper.displayScriptNotFound(scriptName, scriptNames);
     return
   }
 
@@ -832,5 +923,33 @@ process.on('SIGTERM', () => {
   process.exit(0)
 })
 
-// Parse command line arguments
-program.parse()
+// Parse command line arguments with error handling
+try {
+  program.parse()
+} catch (error: any) {
+  // Handle Commander.js errors gracefully
+  if (error.code === 'commander.missingArgument') {
+    const commandName = error.command?.name() || 'unknown';
+    UsageHelper.displayError(`Missing required argument for command: ${commandName}`, 'Check the command usage');
+    UsageHelper.displayCommandHelp(commandName);
+    process.exit(1);
+  } else if (error.code === 'commander.unknownOption') {
+    UsageHelper.displayError(`Unknown option: ${error.option}`, 'Use --help to see available options');
+    process.exit(1);
+  } else if (error.code === 'commander.unknownCommand') {
+    UsageHelper.displayError(`Unknown command: ${error.command}`, 'Use --help to see available commands');
+    process.exit(1);
+  } else if (error.code === 'commander.version') {
+    // Version command succeeded - just exit cleanly
+    process.exit(0);
+  } else if (error.code === 'commander.helpDisplayed' || error.message === '(outputHelp)') {
+    // Help command succeeded - just exit cleanly
+    process.exit(0);
+  } else {
+    // Only show error for actual errors
+    if (error.message && error.message !== '(outputHelp)' && !error.message.match(/^\d+\.\d+\.\d+$/)) {
+      UsageHelper.displayError(error.message, 'Use --help for usage information');
+    }
+    process.exit(error.exitCode || 1);
+  }
+}
