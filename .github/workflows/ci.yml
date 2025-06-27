@@ -79,26 +79,46 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          # Test basic commands
+          # Test basic commands that should succeed
           node dist/index.js --help
-          node dist/index.js --version
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          
+          node dist/index.js --version  
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          
           node dist/index.js list
+          if ($LASTEXITCODE -ne 0) { exit 1 }
           
-          # Test aliases error handling (PowerShell compatible)
-          $output = node dist/index.js add 2>&1
-          if ($output -notmatch "Missing required arguments") { exit 1 }
+          # Test that commands with missing args fail gracefully (exit 1, not crash)
+          node dist/index.js add 2>$null
+          if ($LASTEXITCODE -ne 1) { 
+            Write-Host "Expected add command to exit with status 1, got $LASTEXITCODE"
+            exit 1 
+          }
           
-          $output = node dist/index.js a 2>&1
-          if ($output -notmatch "Missing required arguments") { exit 1 }
+          node dist/index.js a 2>$null
+          if ($LASTEXITCODE -ne 1) {
+            Write-Host "Expected a alias to exit with status 1, got $LASTEXITCODE" 
+            exit 1
+          }
           
-          $output = node dist/index.js u 2>&1
-          if ($output -notmatch "Missing required arguments") { exit 1 }
+          node dist/index.js u 2>$null
+          if ($LASTEXITCODE -ne 1) {
+            Write-Host "Expected u alias to exit with status 1, got $LASTEXITCODE"
+            exit 1
+          }
           
-          $output = node dist/index.js r 2>&1
-          if ($output -notmatch "Missing required arguments") { exit 1 }
+          node dist/index.js r 2>$null
+          if ($LASTEXITCODE -ne 1) {
+            Write-Host "Expected r alias to exit with status 1, got $LASTEXITCODE"
+            exit 1
+          }
           
-          $output = node dist/index.js s 2>&1
-          if ($output -notmatch "Missing required arguments") { exit 1 }
+          node dist/index.js s 2>$null
+          if ($LASTEXITCODE -ne 1) {
+            Write-Host "Expected s alias to exit with status 1, got $LASTEXITCODE"
+            exit 1
+          }
           
           Write-Host "✅ All alias tests passed on Windows"
 
