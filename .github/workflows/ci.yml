@@ -65,6 +65,19 @@ jobs:
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-aliases-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
 
+      - name: Debug environment (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "🔍 Debug: Windows environment check"
+          Write-Host "Database dir: $env:SCAFFOLD_SCRIPTS_DB_DIR"
+          Write-Host "Temp dir: ${{ runner.temp }}"
+          Write-Host "Node version: $(node --version)"
+          Write-Host "NPM version: $(npm --version)"
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "Testing simple Jest run..."
+          npx jest --version
+
       - name: Run all tests with coverage
         run: |
           echo "🔍 Debug: Starting coverage tests on ${{ matrix.os }}"
@@ -75,7 +88,9 @@ jobs:
           echo "🔍 Debug: Current directory: $(pwd)"
           echo "🔍 Debug: Jest config:"
           cat jest.config.js
-          echo "🔍 Debug: Running coverage test..."
+          echo "🔍 Debug: Running basic test first..."
+          npm run test:basic 2>&1 | head -20
+          echo "🔍 Debug: Now running coverage test..."
           npm run test:coverage
           echo "🔍 Debug: Coverage test completed with exit code: $?"
         shell: bash
