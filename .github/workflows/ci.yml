@@ -46,6 +46,7 @@ jobs:
           npm run build
           echo "🔍 Debug: Build completed, checking dist files..."
           ls -la dist/ | head -10
+        shell: bash
 
       - name: Run basic tests
         run: |
@@ -55,6 +56,7 @@ jobs:
           echo "🔍 Debug: Node version: $(node --version)"
           echo "🔍 Debug: NPM version: $(npm --version)"
           npm run test:basic
+        shell: bash
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-basic-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
 
@@ -75,6 +77,7 @@ jobs:
             node dist/index.js list || echo "CLI list failed"
             exit 1
           }
+        shell: bash
         timeout-minutes: 15
         env:
           SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
