@@ -77,20 +77,30 @@ jobs:
 
       - name: Test CLI commands and aliases (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           # Test basic commands
           node dist/index.js --help
           node dist/index.js --version
           node dist/index.js list
           
-          # Test aliases error handling (Windows compatible)
-          node dist/index.js add 2>&1 | findstr "Missing required arguments" >nul || exit 1
-          node dist/index.js a 2>&1 | findstr "Missing required arguments" >nul || exit 1
-          node dist/index.js u 2>&1 | findstr "Missing required arguments" >nul || exit 1
-          node dist/index.js r 2>&1 | findstr "Missing required arguments" >nul || exit 1
-          node dist/index.js s 2>&1 | findstr "Missing required arguments" >nul || exit 1
+          # Test aliases error handling (PowerShell compatible)
+          $output = node dist/index.js add 2>&1
+          if ($output -notmatch "Missing required arguments") { exit 1 }
           
-          echo "✅ All alias tests passed on Windows"
+          $output = node dist/index.js a 2>&1
+          if ($output -notmatch "Missing required arguments") { exit 1 }
+          
+          $output = node dist/index.js u 2>&1
+          if ($output -notmatch "Missing required arguments") { exit 1 }
+          
+          $output = node dist/index.js r 2>&1
+          if ($output -notmatch "Missing required arguments") { exit 1 }
+          
+          $output = node dist/index.js s 2>&1
+          if ($output -notmatch "Missing required arguments") { exit 1 }
+          
+          Write-Host "✅ All alias tests passed on Windows"
 
   integration-test:
     name: Integration Tests
