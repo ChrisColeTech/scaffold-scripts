@@ -14,9 +14,13 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:basic": "jest tests/basic.test.ts",
+    "test:aliases": "jest tests/aliases.test.ts",
+    "test:ci": "npm run lint && npm run build && npm run test:basic && npm run test:aliases",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "prepack": "npm run build",
+    "prepare": "husky install",
     "install-global": "npm install -g .",
     "uninstall-global": "npm uninstall -g scaffold-scripts"
   },
@@ -58,6 +62,7 @@
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",
     "eslint": "^8.54.0",
+    "husky": "^8.0.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.0"

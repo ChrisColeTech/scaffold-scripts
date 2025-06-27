@@ -1,10 +1,11 @@
-name: CI
+name: Continuous Integration
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, release, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, release, develop ]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -36,22 +37,218 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Run linter
+        run: npm run lint
 
       - name: Build project
         run: npm run build
 
-      - name: Test CLI commands (Unix)
+      - name: Run basic tests
+        run: npm test -- tests/basic.test.ts
+
+      - name: Run alias tests
+        run: npm test -- tests/aliases.test.ts
+
+      - name: Run all tests with coverage
+        run: npm run test:coverage
+
+      - name: Test CLI commands and aliases (Unix)
         if: runner.os != 'Windows'
         run: |
+          # Test basic commands
           node dist/index.js --help
           node dist/index.js --version
           node dist/index.js list
+          
+          # Test all aliases error handling
+          node dist/index.js add 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js a 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js u 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js r 2>&1 | grep -q "Missing required arguments" || exit 1
+          node dist/index.js s 2>&1 | grep -q "Missing required arguments" || exit 1
+          
+          # Test list aliases work identically
+          node dist/index.js list > /tmp/list1.txt
+          node dist/index.js l > /tmp/list2.txt
+          diff /tmp/list1.txt /tmp/list2.txt || exit 1
+          
+          echo "✅ All alias tests passed on Unix"
 
-      - name: Test CLI commands (Windows)
+      - name: Test CLI commands and aliases (Windows)
         if: runner.os == 'Windows'
         run: |
+          # Test basic commands
           node dist/index.js --help
           node dist/index.js --version
           node dist/index.js list
+          
+          # Test aliases error handling (Windows compatible)
+          node dist/index.js add 2>&1 | findstr "Missing required arguments" >nul || exit 1
+          node dist/index.js a 2>&1 | findstr "Missing required arguments" >nul || exit 1
+          node dist/index.js u 2>&1 | findstr "Missing required arguments" >nul || exit 1
+          node dist/index.js r 2>&1 | findstr "Missing required arguments" >nul || exit 1
+          node dist/index.js s 2>&1 | findstr "Missing required arguments" >nul || exit 1
+          
+          echo "✅ All alias tests passed on Windows"
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Test CLI installation globally
+      run: |
+        npm pack
+        npm install -g ./scaffold-scripts-*.tgz
+        
+    - name: Test global commands and aliases
+      run: |
+        # Test that both main commands work globally
+        scripts --version
+        scaffold --version
+        
+        # Test error handling with global install
+        scripts add 2>&1 | grep -q "Missing required arguments" || exit 1
+        scripts a 2>&1 | grep -q "Missing required arguments" || exit 1
+        scripts u 2>&1 | grep -q "Missing required arguments" || exit 1
+        scripts r 2>&1 | grep -q "Missing required arguments" || exit 1
+        scripts s 2>&1 | grep -q "Missing required arguments" || exit 1
+        
+        # Test list commands work
+        scripts list
+        scripts l
+        
+        echo "✅ All global alias tests passed"
+        
+    - name: Test complete alias workflow
+      run: |
+        # Create a test script
+        echo '#!/bin/bash' > test-ci-script.sh
+        echo 'echo "Hello from CI test"' >> test-ci-script.sh
+        
+        # Test complete workflow using only aliases
+        scripts a ci-test ./test-ci-script.sh
+        scripts l | grep -q "ci-test" || exit 1
+        scripts s ci-test | grep -q "Command Details" || exit 1
+        scripts r ci-test
+        
+        # Verify cleanup
+        ! scripts l | grep -q "ci-test" || exit 1
+        
+        echo "✅ Complete alias workflow test passed"
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+      
+    - name: Check for known vulnerabilities
+      run: npm audit --audit-level=high --production
+
+  pre-release-check:
+    name: Pre-Release Validation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release' || contains(github.ref, 'release')
+    needs: [test, integration-test, security-audit]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Validate package.json
+      run: |
+        # Check that version is properly set
+        node -e "const pkg = require('./package.json'); if (!pkg.version.match(/^\d+\.\d+\.\d+$/)) process.exit(1);"
+        
+        # Check that all required fields are present
+        node -e "
+          const pkg = require('./package.json');
+          const required = ['name', 'version', 'description', 'main', 'bin', 'scripts'];
+          for (const field of required) {
+            if (!pkg[field]) {
+              console.error('Missing required field:', field);
+              process.exit(1);
+            }
+          }
+        "
+        
+    - name: Test package creation
+      run: |
+        npm pack
+        tar -tzf scaffold-scripts-*.tgz | head -20
+        
+    - name: Run extended alias tests for release
+      run: |
+        # Run alias tests multiple times to catch any intermittent issues
+        for i in {1..3}; do
+          echo "🔄 Running alias test iteration $i"
+          npm test -- tests/aliases.test.ts
+        done
+        
+        echo "✅ Extended alias tests passed for release"
+        
+    - name: Generate release validation report
+      run: |
+        echo "# Release Validation Report" > release-validation.md
+        echo "## Test Results" >> release-validation.md
+        echo "- ✅ Unit tests passed" >> release-validation.md
+        echo "- ✅ Integration tests passed" >> release-validation.md
+        echo "- ✅ Security audit passed" >> release-validation.md
+        echo "- ✅ Alias tests passed" >> release-validation.md
+        echo "- ✅ Package validation passed" >> release-validation.md
+        echo "## Build Info" >> release-validation.md
+        echo "- Node version: $(node --version)" >> release-validation.md
+        echo "- NPM version: $(npm --version)" >> release-validation.md
+        echo "- Commit: ${{ github.sha }}" >> release-validation.md
+        echo "- Branch: ${{ github.ref_name }}" >> release-validation.md
+        echo "- Date: $(date -u)" >> release-validation.md
+        
+    - name: Upload release validation report
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-validation-report
+        path: release-validation.md
+        retention-days: 30

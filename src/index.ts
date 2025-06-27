@@ -28,7 +28,6 @@ program
   .version(packageJson.version, '-v, --version', 'display version number')
   .helpOption('-h, --help', 'display help for command')
   .addHelpCommand('help [command]', 'display help for command')
-  .exitOverride() // Allow us to handle errors ourselves
 
 // Configure custom help
 program.configureHelp({
@@ -41,37 +40,13 @@ program.on('--help', () => {
   UsageHelper.displayMainHelp();
 });
 
-// Global error handler for Commander.js
+// Configure Commander to use our error handling
+program.exitOverride();
+
+// Override Commander's error output
 program.configureOutput({
-  writeErr: (str) => {
-    // Intercept Commander errors and provide better messages
-    if (str.includes('missing required argument')) {
-      const match = str.match(/missing required argument '([^']+)'/);
-      if (match) {
-        const argName = match[1];
-        UsageHelper.displayError(`Missing required argument: ${argName}`, 'Check the command usage below');
-        return;
-      }
-    }
-    if (str.includes('unknown option')) {
-      const match = str.match(/unknown option '([^']+)'/);
-      if (match) {
-        const option = match[1];
-        UsageHelper.displayError(`Unknown option: ${option}`, 'Use --help to see available options');
-        return;
-      }
-    }
-    if (str.includes('unknown command')) {
-      const match = str.match(/unknown command '([^']+)'/);
-      if (match) {
-        const command = match[1];
-        UsageHelper.displayError(`Unknown command: ${command}`, 'Use --help to see available commands');
-        return;
-      }
-    }
-    // Default error output
-    process.stderr.write(str);
-  }
+  writeErr: () => {}, // Suppress all Commander error output
+  writeOut: (str) => process.stdout.write(str)
 });
 
 // Main scaffolding commands
@@ -127,13 +102,6 @@ program
   })
   .action(async (name, scriptPath, options) => {
     try {
-      // Validate arguments
-      if (!name || !scriptPath) {
-        UsageHelper.displayError('Missing required arguments', 'Use: scripts add <name> <script-path>');
-        UsageHelper.displayCommandHelp('add');
-        process.exit(1);
-      }
-      
       await addCommand(name, scriptPath, options)
     } catch (error: any) {
       UsageHelper.displayError(error.message, 'Check your script path and try again');
@@ -155,13 +123,6 @@ program
   })
   .action(async (name, scriptPath, options) => {
     try {
-      // Validate arguments
-      if (!name || !scriptPath) {
-        UsageHelper.displayError('Missing required arguments', 'Use: scripts update <name> <script-path>');
-        UsageHelper.displayCommandHelp('update');
-        process.exit(1);
-      }
-      
       await updateCommand(name, scriptPath, options)
     } catch (error: any) {
       UsageHelper.displayError(error.message, 'Check that the script exists and path is correct');
@@ -180,13 +141,6 @@ program
   })
   .action(async (name) => {
     try {
-      // Validate arguments
-      if (!name) {
-        UsageHelper.displayError('Missing required argument', 'Use: scripts remove <name>');
-        UsageHelper.displayCommandHelp('remove');
-        process.exit(1);
-      }
-      
       await removeCommand(name)
     } catch (error: any) {
       UsageHelper.displayError(error.message, 'Check that the script name is correct');
@@ -223,13 +177,6 @@ program
   })
   .action(async (name) => {
     try {
-      // Validate arguments
-      if (!name) {
-        UsageHelper.displayError('Missing required argument', 'Use: scripts view <name>');
-        UsageHelper.displayCommandHelp('view');
-        process.exit(1);
-      }
-      
       await handleScriptCommand(name, true)
     } catch (error: any) {
       UsageHelper.displayError(error.message, 'Check that the script name is correct');
@@ -247,13 +194,6 @@ program
   })
   .action(async (directory) => {
     try {
-      // Validate arguments
-      if (!directory) {
-        UsageHelper.displayError('Missing required argument', 'Use: scripts export <directory>');
-        UsageHelper.displayCommandHelp('export');
-        process.exit(1);
-      }
-      
       await exportCommand(directory)
     } catch (error: any) {
       UsageHelper.displayError(error.message, 'Check that the directory path is valid and writable');
@@ -929,15 +869,32 @@ try {
 } catch (error: any) {
   // Handle Commander.js errors gracefully
   if (error.code === 'commander.missingArgument') {
-    const commandName = error.command?.name() || 'unknown';
-    UsageHelper.displayError(`Missing required argument for command: ${commandName}`, 'Check the command usage');
+    // Extract command name from argv or error
+    let commandName = 'unknown';
+    if (process.argv.length > 2) {
+      commandName = process.argv[2];
+    }
+    if (error.command?.name()) {
+      commandName = error.command.name();
+    }
+    
+    UsageHelper.displayError(
+      `Missing required arguments`,
+      `Use: scripts ${commandName} --help for usage information`
+    );
     UsageHelper.displayCommandHelp(commandName);
     process.exit(1);
   } else if (error.code === 'commander.unknownOption') {
-    UsageHelper.displayError(`Unknown option: ${error.option}`, 'Use --help to see available options');
+    UsageHelper.displayError(
+      `Unknown option: ${error.option}`,
+      'Use --help to see available options'
+    );
     process.exit(1);
   } else if (error.code === 'commander.unknownCommand') {
-    UsageHelper.displayError(`Unknown command: ${error.command}`, 'Use --help to see available commands');
+    UsageHelper.displayError(
+      `Unknown command: ${error.command}`,
+      'Use --help to see available commands'
+    );
     process.exit(1);
   } else if (error.code === 'commander.version') {
     // Version command succeeded - just exit cleanly
@@ -948,7 +905,7 @@ try {
   } else {
     // Only show error for actual errors
     if (error.message && error.message !== '(outputHelp)' && !error.message.match(/^\d+\.\d+\.\d+$/)) {
-      UsageHelper.displayError(error.message, 'Use --help for usage information');
+      UsageHelper.displayError(error.message, 'Check your command syntax and try again');
     }
     process.exit(error.exitCode || 1);
   }

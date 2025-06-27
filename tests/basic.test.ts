@@ -60,7 +60,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} a`, { stdio: 'pipe' });
     } catch (error: any) {
       result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Check the command usage');
+      expect(result).toContain('Suggestion: Use:');
       expect(result).not.toContain('unknown option');
       expect(result).not.toContain('unknown command');
     }
@@ -70,7 +70,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} add`, { stdio: 'pipe' });
     } catch (error: any) {
       const addResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(addResult).toContain('Suggestion: Check the command usage');
+      expect(addResult).toContain('Suggestion: Use:');
       // Both should produce similar error messages
       expect(addResult).toContain('name');
     }
@@ -80,7 +80,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} u`, { stdio: 'pipe' });
     } catch (error: any) {
       result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Check the command usage');
+      expect(result).toContain('Suggestion: Use:');
       expect(result).not.toContain('unknown option');
       expect(result).not.toContain('unknown command');
     }
@@ -90,7 +90,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} update`, { stdio: 'pipe' });
     } catch (error: any) {
       const updateResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(updateResult).toContain('Suggestion: Check the command usage');
+      expect(updateResult).toContain('Suggestion: Use:');
     }
     
     // Test 'r' alias for 'remove' command
@@ -98,7 +98,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} r`, { stdio: 'pipe' });
     } catch (error: any) {
       result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Check the command usage');
+      expect(result).toContain('Suggestion: Use:');
       expect(result).not.toContain('unknown option');
       expect(result).not.toContain('unknown command');
     }
@@ -108,7 +108,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} remove`, { stdio: 'pipe' });
     } catch (error: any) {
       const removeResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(removeResult).toContain('Suggestion: Check the command usage');
+      expect(removeResult).toContain('Suggestion: Use:');
     }
     
     // Test 'l' alias for 'list' command - should work without error
@@ -131,7 +131,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} s`, { stdio: 'pipe' });
     } catch (error: any) {
       result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Check the command usage');
+      expect(result).toContain('Suggestion: Use:');
       expect(result).not.toContain('unknown option');
       expect(result).not.toContain('unknown command');
     }
@@ -141,7 +141,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} view`, { stdio: 'pipe' });
     } catch (error: any) {
       const viewResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(viewResult).toContain('Suggestion: Check the command usage');
+      expect(viewResult).toContain('Suggestion: Use:');
     }
   });
 
