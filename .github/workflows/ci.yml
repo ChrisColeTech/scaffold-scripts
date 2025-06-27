@@ -264,6 +264,7 @@ jobs:
           }
           
           Write-Host "✅ All alias tests passed on Windows"
+          exit 0
 
   integration-test:
     name: Integration Tests
