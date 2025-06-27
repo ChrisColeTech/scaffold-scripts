@@ -27,6 +27,15 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     expect(result).toMatch(/\d+\.\d+\.\d+/);
   });
 
+  it('should support -v for version', () => {
+    const result = execSync(`node ${CLI_PATH} -v`, { encoding: 'utf8' });
+    expect(result).toMatch(/\d+\.\d+\.\d+/);
+    
+    // Test that -v and --version produce same output
+    const longResult = execSync(`node ${CLI_PATH} --version`, { encoding: 'utf8' });
+    expect(result).toBe(longResult);
+  });
+
   it('should handle list command without crashing', () => {
     expect(() => {
       execSync(`node ${CLI_PATH} list`, { stdio: 'pipe' });
@@ -117,9 +126,9 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     const listResult = execSync(`node ${CLI_PATH} list`, { encoding: 'utf8', stdio: 'pipe' });
     expect(lResult).toBe(listResult);
     
-    // Test 'v' alias for 'view' command - should show error for missing arguments
+    // Test 's' alias for 'view' command - should show error for missing arguments
     try {
-      execSync(`node ${CLI_PATH} v`, { stdio: 'pipe' });
+      execSync(`node ${CLI_PATH} s`, { stdio: 'pipe' });
     } catch (error: any) {
       result = error.stdout?.toString() || error.stderr?.toString() || '';
       expect(result).toContain('missing required argument');
@@ -138,6 +147,7 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
 
   it('should reject old-style flag syntax', () => {
     // Test that -a, -u, -r, -l are rejected as unknown options
+    // Note: -v is now valid for version, so it's excluded from this test
     const oldFlags = ['-a', '-u', '-r', '-l'];
     
     for (const flag of oldFlags) {
