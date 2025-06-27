@@ -21,6 +21,22 @@ scripts my-script
 scripts list
 ```
 
+## 🚀 Interactive Mode
+
+Just type `scripts` with no arguments to launch the interactive menu:
+
+```bash
+scripts
+```
+
+Use arrow keys to:
+- **Select and run** any script
+- **List all scripts** with details
+- **Get help** adding new scripts
+- **Exit** when done
+
+Perfect for discovering and running scripts without remembering names!
+
 ## Commands
 
 | Command | Aliases | Description |
@@ -40,22 +56,6 @@ scripts list
 2. **Save locally** → Copy to a `.sh`, `.py`, `.js`, or `.ps1` file  
 3. **Add to scaffold** → `scripts add script-name file.sh`
 4. **Run from anywhere** → `scripts script-name` (no more hunting for files)
-
-## 🚀 Interactive Mode
-
-Just type `scripts` with no arguments to launch the interactive menu:
-
-```bash
-scripts
-```
-
-Use arrow keys to:
-- **Select and run** any script
-- **List all scripts** with details
-- **Get help** adding new scripts
-- **Exit** when done
-
-Perfect for discovering and running scripts without remembering names!
 
 ## Examples
 
