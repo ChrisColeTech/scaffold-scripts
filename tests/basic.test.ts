@@ -64,60 +64,36 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     let result;
     
     // Test 'a' alias for 'add' command
-    try {
-      execSync(`node ${CLI_PATH} a`, { stdio: 'pipe' });
-    } catch (error: any) {
-      result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Use:');
-      expect(result).not.toContain('unknown option');
-      expect(result).not.toContain('unknown command');
-    }
+    result = execCLI('a', { stdio: 'pipe' });
+    expect(result).toContain('Suggestion: Use:');
+    expect(result).not.toContain('unknown option');
+    expect(result).not.toContain('unknown command');
     
     // Test 'add' full command produces same error
-    try {
-      execSync(`node ${CLI_PATH} add`, { stdio: 'pipe' });
-    } catch (error: any) {
-      const addResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(addResult).toContain('Suggestion: Use:');
-      // Both should produce similar error messages
-      expect(addResult).toContain('name');
-    }
+    const addResult = execCLI('add', { stdio: 'pipe' });
+    expect(addResult).toContain('Suggestion: Use:');
+    // Both should produce similar error messages
+    expect(addResult).toContain('name');
     
     // Test 'u' alias for 'update' command
-    try {
-      execSync(`node ${CLI_PATH} u`, { stdio: 'pipe' });
-    } catch (error: any) {
-      result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Use:');
-      expect(result).not.toContain('unknown option');
-      expect(result).not.toContain('unknown command');
-    }
+    result = execCLI('u', { stdio: 'pipe' });
+    expect(result).toContain('Suggestion: Use:');
+    expect(result).not.toContain('unknown option');
+    expect(result).not.toContain('unknown command');
     
     // Test 'update' full command produces same error
-    try {
-      execSync(`node ${CLI_PATH} update`, { stdio: 'pipe' });
-    } catch (error: any) {
-      const updateResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(updateResult).toContain('Suggestion: Use:');
-    }
+    const updateResult = execCLI('update', { stdio: 'pipe' });
+    expect(updateResult).toContain('Suggestion: Use:');
     
     // Test 'r' alias for 'remove' command
-    try {
-      execSync(`node ${CLI_PATH} r`, { stdio: 'pipe' });
-    } catch (error: any) {
-      result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Use:');
-      expect(result).not.toContain('unknown option');
-      expect(result).not.toContain('unknown command');
-    }
+    result = execCLI('r', { stdio: 'pipe' });
+    expect(result).toContain('Suggestion: Use:');
+    expect(result).not.toContain('unknown option');
+    expect(result).not.toContain('unknown command');
     
     // Test 'remove' full command produces same error
-    try {
-      execSync(`node ${CLI_PATH} remove`, { stdio: 'pipe' });
-    } catch (error: any) {
-      const removeResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(removeResult).toContain('Suggestion: Use:');
-    }
+    const removeResult = execCLI('remove', { stdio: 'pipe' });
+    expect(removeResult).toContain('Suggestion: Use:');
     
     // Test 'l' alias for 'list' command - should work without error
     expect(() => {
@@ -136,22 +112,14 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     expect(lResult).toContain('No scripts available');
     
     // Test 's' alias for 'view' command - should show error for missing arguments
-    try {
-      execSync(`node ${CLI_PATH} s`, { stdio: 'pipe' });
-    } catch (error: any) {
-      result = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(result).toContain('Suggestion: Use:');
-      expect(result).not.toContain('unknown option');
-      expect(result).not.toContain('unknown command');
-    }
+    result = execCLI('s', { stdio: 'pipe' });
+    expect(result).toContain('Suggestion: Use:');
+    expect(result).not.toContain('unknown option');
+    expect(result).not.toContain('unknown command');
     
     // Test 'view' full command produces same error
-    try {
-      execSync(`node ${CLI_PATH} view`, { stdio: 'pipe' });
-    } catch (error: any) {
-      const viewResult = error.stdout?.toString() || error.stderr?.toString() || '';
-      expect(viewResult).toContain('Suggestion: Use:');
-    }
+    const viewResult = execCLI('view', { stdio: 'pipe' });
+    expect(viewResult).toContain('Suggestion: Use:');
   });
 
   it('should reject old-style flag syntax', () => {
@@ -160,15 +128,10 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     const oldFlags = ['-a', '-u', '-r', '-l'];
     
     for (const flag of oldFlags) {
-      try {
-        execSync(`node ${CLI_PATH} ${flag} test-name test-file`, { stdio: 'pipe' });
-        fail(`Expected ${flag} to be rejected as unknown option`);
-      } catch (error: any) {
-        const result = error.stdout?.toString() || error.stderr?.toString() || '';
-        expect(result).toContain('Suggestion: Use --help to see available options');
-        // The error output no longer shows the specific flag, but shows helpful suggestions
-        expect(result).toContain('Suggestion: Use --help to see available options');
-      }
+      const result = execCLI(`${flag} test-name test-file`, { stdio: 'pipe' });
+      expect(result).toContain('Suggestion: Use --help to see available options');
+      // The error output no longer shows the specific flag, but shows helpful suggestions
+      expect(result).toContain('Suggestion: Use --help to see available options');
     }
   });
 
@@ -216,19 +179,19 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     
     try {
       // Test adding with full command
-      const addResult = execSync(`node ${CLI_PATH} add test-full-workflow "${scriptFile}"`, { encoding: 'utf8' });
+      const addResult = execCLI(`add test-full-workflow "${scriptFile}"`, { encoding: 'utf8' });
       expect(addResult).toContain('Added script "test-full-workflow"');
       
       // Test listing with full command
-      const listResult = execSync(`node ${CLI_PATH} list`, { encoding: 'utf8' });
+      const listResult = execCLI('list', { encoding: 'utf8' });
       expect(listResult).toContain('test-full-workflow');
       
       // Test removing with full command
-      const removeResult = execSync(`node ${CLI_PATH} remove test-full-workflow`, { encoding: 'utf8' });
+      const removeResult = execCLI('remove test-full-workflow', { encoding: 'utf8' });
       expect(removeResult).toContain('Removed script "test-full-workflow"');
       
       // Test listing again should not show our script
-      const listAfterRemove = execSync(`node ${CLI_PATH} list`, { encoding: 'utf8' });
+      const listAfterRemove = execCLI('list', { encoding: 'utf8' });
       expect(listAfterRemove).not.toContain('test-full-workflow');
       
     } finally {
