@@ -72,7 +72,7 @@ jobs:
         if: github.ref == 'refs/heads/release' || github.event_name == 'workflow_dispatch'
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git tag -a "v$VERSION" -m "Release v$VERSION" || true
           git push origin "v$VERSION" || true
 
       - name: Publish to NPM
