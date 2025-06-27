@@ -1,9 +1,11 @@
 /**
  * Basic smoke tests for Scaffold Scripts CLI
+ * Each test is properly isolated with clean database state
  */
 
 import { execSync } from 'child_process';
 import { join } from 'path';
+import { setupTest, cleanupTest } from './test-isolation';
 
 const CLI_PATH = join(__dirname, '..', 'dist', 'index.js');
 
@@ -15,6 +17,14 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
     } catch (error) {
       console.warn('Build failed, tests may not work correctly');
     }
+  });
+
+  beforeEach(() => {
+    setupTest();
+  });
+
+  afterEach(() => {
+    cleanupTest();
   });
 
   it('should show help without crashing', () => {
@@ -121,10 +131,11 @@ describe('Scaffold Scripts CLI - Smoke Tests', () => {
       execSync(`node ${CLI_PATH} list`, { stdio: 'pipe' });
     }).not.toThrow();
     
-    // Verify 'l' and 'list' produce same output
+    // Verify 'l' and 'list' produce same output (in clean state, both should show "No scripts available")
     const lResult = execSync(`node ${CLI_PATH} l`, { encoding: 'utf8', stdio: 'pipe' });
     const listResult = execSync(`node ${CLI_PATH} list`, { encoding: 'utf8', stdio: 'pipe' });
     expect(lResult).toBe(listResult);
+    expect(lResult).toContain('No scripts available');
     
     // Test 's' alias for 'view' command - should show error for missing arguments
     try {
