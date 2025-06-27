@@ -45,17 +45,24 @@ jobs:
 
       - name: Run basic tests
         run: npm run test:basic
+        env:
+          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-basic-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
 
       - name: Run alias tests  
         run: npm run test:aliases
+        env:
+          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-aliases-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
 
       - name: Run all tests with coverage
-        if: runner.os == 'Linux'
         run: npm run test:coverage
         timeout-minutes: 15
+        env:
+          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
 
       - name: Test CLI commands and aliases (Unix)
         if: runner.os != 'Windows'
+        env:
+          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-cli-unix-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
         run: |
           # Test basic commands
           node dist/index.js --help
@@ -79,6 +86,8 @@ jobs:
       - name: Test CLI commands and aliases (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
+        env:
+          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-cli-windows-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
         run: |
           # Test basic commands that should succeed
           node dist/index.js --help
