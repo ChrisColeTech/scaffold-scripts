@@ -119,12 +119,25 @@ export class ScriptExecutor {
     console.log('--- End Script ---\\n');
     
     try {
-      // Use pwsh (PowerShell Core) if available, otherwise fall back to powershell.exe
+      // Detect best available PowerShell on all platforms
       let shell = '/bin/bash';
+      
       if (this.isWindows) {
-        shell = 'powershell.exe';
+        // On Windows, try powershell.exe first, then pwsh as fallback
+        try {
+          await execAsync('where powershell.exe', { timeout: 1000 });
+          shell = 'powershell.exe';
+        } catch {
+          try {
+            await execAsync('where pwsh', { timeout: 1000 });
+            shell = 'pwsh';
+          } catch {
+            // If neither PowerShell is available on Windows, use cmd
+            shell = 'cmd';
+          }
+        }
       } else {
-        // Check if we should use PowerShell Core for cross-platform compatibility
+        // On Unix-like systems, try pwsh first, then bash as fallback
         try {
           await execAsync('which pwsh', { timeout: 1000 });
           shell = 'pwsh';
