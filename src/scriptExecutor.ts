@@ -119,7 +119,20 @@ export class ScriptExecutor {
     console.log('--- End Script ---\\n');
     
     try {
-      const shell = this.isWindows ? 'powershell.exe' : '/bin/bash';
+      // Use pwsh (PowerShell Core) if available, otherwise fall back to powershell.exe
+      let shell = '/bin/bash';
+      if (this.isWindows) {
+        shell = 'powershell.exe';
+      } else {
+        // Check if we should use PowerShell Core for cross-platform compatibility
+        try {
+          await execAsync('which pwsh', { timeout: 1000 });
+          shell = 'pwsh';
+        } catch {
+          shell = '/bin/bash';
+        }
+      }
+      
       const result = await execAsync(convertedScript, { 
         shell,
         cwd: process.cwd(),
