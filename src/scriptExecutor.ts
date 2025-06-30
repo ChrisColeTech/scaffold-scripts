@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { platform } from 'os';
-import { ScriptTypeDetector } from './scriptTypeDetector.js';
+import { ScriptTypeDetector, ScriptTypeInfo } from './scriptTypeDetector.js';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -94,11 +94,33 @@ export class ScriptExecutor {
   }
 
   /**
+   * Get script type info from string
+   */
+  private getScriptTypeInfo(type: string): ScriptTypeInfo {
+    switch (type) {
+      case 'nodejs':
+        return { type: 'nodejs', interpreters: ['node'], extensions: ['.js', '.mjs'] };
+      case 'python':
+        return { type: 'python', interpreters: ['python', 'python3'], extensions: ['.py'] };
+      case 'powershell':
+        return { type: 'powershell', interpreters: ['powershell', 'pwsh'], extensions: ['.ps1'] };
+      case 'shell':
+        return { type: 'shell', interpreters: ['bash'], extensions: ['.sh'] };
+      case 'batch':
+        return { type: 'batch', interpreters: ['cmd'], extensions: ['.bat', '.cmd'] };
+      default:
+        return { type: 'shell', interpreters: ['bash'], extensions: ['.sh'] };
+    }
+  }
+
+  /**
    * Execute the script in the current directory
    */
-  async executeScript(script: string, targetPlatform?: string): Promise<{ stdout: string; stderr: string }> {
-    const scriptType = this.typeDetector.detectType(script);
-    console.log(`Detected script type: ${scriptType.type}`);
+  async executeScript(script: string, targetPlatform?: string, args: string[] = [], knownScriptType?: string): Promise<{ stdout: string; stderr: string }> {
+    const scriptType = knownScriptType ? 
+      this.getScriptTypeInfo(knownScriptType) : 
+      this.typeDetector.detectType(script);
+    console.log(`Using script type: ${scriptType.type}`);
     
     // Check if required interpreters are available
     const availability = await this.typeDetector.checkInterpreterAvailability(scriptType);
@@ -106,9 +128,9 @@ export class ScriptExecutor {
       throw new Error(`Required interpreters not found: ${availability.missing.join(', ')}. Please install them first.`);
     }
 
-    // For Python, Node.js, or other interpreter-based scripts, create a temporary file
-    if (['python', 'nodejs'].includes(scriptType.type)) {
-      return this.executeInterpreterScript(script, scriptType);
+    // For Python, Node.js, PowerShell, or other interpreter-based scripts, create a temporary file
+    if (['python', 'nodejs', 'powershell'].includes(scriptType.type)) {
+      return this.executeInterpreterScript(script, scriptType, args);
     }
     
     // For shell/batch scripts, use the converted approach
@@ -161,7 +183,7 @@ export class ScriptExecutor {
   /**
    * Execute interpreter-based scripts (Python, Node.js, etc.)
    */
-  private async executeInterpreterScript(script: string, scriptType: any): Promise<{ stdout: string; stderr: string }> {
+  private async executeInterpreterScript(script: string, scriptType: any, args: string[] = []): Promise<{ stdout: string; stderr: string }> {
     // Create temporary directory
     const tempDir = join(tmpdir(), 'scaffold-scripts');
     mkdirSync(tempDir, { recursive: true });
@@ -176,7 +198,13 @@ export class ScriptExecutor {
     console.log('--- End Script ---\\n');
     
     try {
-      const command = this.typeDetector.getExecutionCommand(scriptType, tempFile);
+      let command = this.typeDetector.getExecutionCommand(scriptType, tempFile);
+      
+      // Add script arguments for PowerShell
+      if (scriptType.type === 'powershell' && args.length > 0) {
+        command += ' ' + args.join(' ');
+      }
+      
       const result = await execAsync(command, {
         cwd: process.cwd(),
         maxBuffer: 1024 * 1024 * 10 // 10MB buffer
