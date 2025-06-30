@@ -294,8 +294,12 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
       console.log(chalk.gray(command.description))
     }
 
-    const bestScript = processor.getBestScript(command)
-    const result = await executor.executeScript(bestScript, command.platform)
+    // For interpreter-based scripts (PowerShell, Node.js, Python), always use the original script
+    let scriptToExecute = processor.getBestScript(command)
+    if (['powershell', 'nodejs', 'python'].includes(command.script_type)) {
+      scriptToExecute = command.script_original
+    }
+    const result = await executor.executeScript(scriptToExecute, command.platform, [], command.script_type)
     console.log(chalk.green(`${sym.check()} Script completed successfully!`))
 
     if (result.stdout) {

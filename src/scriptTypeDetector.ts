@@ -127,7 +127,10 @@ export class ScriptTypeDetector {
       /if\s+__name__\s*==\s*['""]__main__['""]:/,
       /pip\s+install/,
       /python\s+-m\s+venv/,
-      /\.py\b/
+      /\.py\b/,
+      /input\s*\(/,
+      /print\s*\(/,
+      /f["'][^"']*\{[^}]*\}/
     ];
 
     const nodePatterns = [
@@ -141,13 +144,27 @@ export class ScriptTypeDetector {
     ];
 
     const powershellPatterns = [
-      /ni\s+-ItemType/,
+      /Write-Host/,
+      /Write-Output/,
       /Get-\w+/,
+      /Set-\w+/,
+      /New-\w+/,
+      /\$\w+\s*=/,
       /\$env:/,
       /\.ps1\b/,
+      /-ForegroundColor/,
+      /-ItemType/,
+      /ni\s+-ItemType/,
       /New-Item/,
       /Copy-Item/,
-      /Move-Item/
+      /Move-Item/,
+      /Test-Path/,
+      /Join-Path/,
+      /Split-Path/,
+      /Read-Host/,
+      /\[string\]::/,
+      /\$LASTEXITCODE/,
+      /param\s*\(/
     ];
 
     const batchPatterns = [
@@ -164,11 +181,11 @@ export class ScriptTypeDetector {
     const powershellScore = this.countMatches(script, powershellPatterns);
     const batchScore = this.countMatches(script, batchPatterns);
 
-    // Determine the dominant type
+    // Determine the dominant type (prioritize PowerShell detection)
     const scores = [
+      { type: 'powershell' as const, score: powershellScore, info: { interpreters: ['powershell', 'pwsh'], extensions: ['.ps1'] } },
       { type: 'python' as const, score: pythonScore, info: { interpreters: ['python', 'python3'], extensions: ['.py'] } },
       { type: 'nodejs' as const, score: nodeScore, info: { interpreters: ['node'], extensions: ['.js', '.mjs'] } },
-      { type: 'powershell' as const, score: powershellScore, info: { interpreters: ['powershell', 'pwsh'], extensions: ['.ps1'] } },
       { type: 'batch' as const, score: batchScore, info: { interpreters: ['cmd'], extensions: ['.bat', '.cmd'] } }
     ];
 
@@ -218,7 +235,12 @@ export class ScriptTypeDetector {
       case 'nodejs':
         return `node "${scriptPath}"`;
       case 'powershell':
-        return `powershell -ExecutionPolicy Bypass -File "${scriptPath}"`;
+        // Try pwsh first (cross-platform), then fall back to powershell.exe on Windows
+        if (process.platform === 'win32') {
+          return `pwsh -ExecutionPolicy Bypass -File "${scriptPath}"`;
+        } else {
+          return `pwsh -File "${scriptPath}"`;
+        }
       case 'batch':
         return `"${scriptPath}"`;
       case 'shell':
