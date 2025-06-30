@@ -1,6 +1,19 @@
 # Scaffold Scripts
 
+[![CI Status](https://github.com/ChrisColeTech/scaffold-scripts/workflows/Continuous%20Integration/badge.svg)](https://github.com/ChrisColeTech/scaffold-scripts/actions)
+[![NPM Version](https://img.shields.io/npm/v/scaffold-scripts.svg)](https://www.npmjs.com/package/scaffold-scripts)
+[![NPM Downloads](https://img.shields.io/npm/dm/scaffold-scripts.svg)](https://www.npmjs.com/package/scaffold-scripts)
+[![GitHub Stars](https://img.shields.io/github/stars/ChrisColeTech/scaffold-scripts.svg)](https://github.com/ChrisColeTech/scaffold-scripts/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+[![Node Version](https://img.shields.io/node/v/scaffold-scripts.svg)](https://nodejs.org/)
+[![Platform Support](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg)](https://github.com/ChrisColeTech/scaffold-scripts)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ChrisColeTech/scaffold-scripts/pulls)
+
 Simple CLI tool for managing and running your own scripts. Add any script, run it anywhere.
+
+> **🚀 Production Ready** • **⚡ Real-time Output** • **🔧 Cross-Platform** • **📦 Zero Config**
 
 ## Quick Install
 
@@ -76,14 +89,32 @@ Shell (`.sh`, `.bash`), Python (`.py`), JavaScript (`.js`, `.ts`), PowerShell (`
 ## Why Use This?
 
 - ✅ **No more hunting for files** - run scripts from anywhere with one command
+- ✅ **Real-time output streaming** - see `npm install` progress as it happens
 - ✅ **Perfect for AI-generated scripts** - easily save and run scripts from ChatGPT/Claude
-- ✅ **Cross-platform** - works on Windows, Mac, Linux
+- ✅ **Cross-platform** - works on Windows, Mac, Linux with automatic conversions
+- ✅ **Interactive mode** - beautiful menu for discovering and running scripts
+- ✅ **Production ready** - comprehensive testing across all platforms
 - ✅ **Simple workflow** - add once, run anywhere
 
 ## Documentation
 
 Full documentation with detailed examples: [README-full.md](./README-full.md)
 
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+
+- 🐛 **Report bugs** via [GitHub Issues](https://github.com/ChrisColeTech/scaffold-scripts/issues)
+- 💡 **Request features** via [GitHub Issues](https://github.com/ChrisColeTech/scaffold-scripts/issues) 
+- 🔀 **Submit PRs** - all contributions welcome!
+
+## Support
+
+- ⭐ **Star this repo** if you find it useful
+- 📖 **Documentation**: [README-full.md](./README-full.md)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/ChrisColeTech/scaffold-scripts/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/ChrisColeTech/scaffold-scripts/discussions)
+
 ## License
 
-MIT
+MIT © [ChrisColeTech](https://github.com/ChrisColeTech)
