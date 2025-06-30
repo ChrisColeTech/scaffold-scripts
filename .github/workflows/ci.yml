@@ -295,7 +295,7 @@ jobs:
         echo "- Date: $(date -u)" >> release-validation.md
         
     - name: Upload release validation report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: release-validation-report
         path: release-validation.md
