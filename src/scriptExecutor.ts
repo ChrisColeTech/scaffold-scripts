@@ -281,10 +281,36 @@ export class ScriptExecutor {
       try {
         let command = this.typeDetector.getExecutionCommand(scriptType, tempFile);
         
-        // Parse command and arguments for spawn
-        const parts = command.split(' ');
-        const executable = parts[0];
-        const execArgs = parts.slice(1);
+        // Parse command and arguments for spawn, handling quoted paths properly
+        const parseCommand = (cmd: string): { executable: string; args: string[] } => {
+          const parts: string[] = [];
+          let current = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < cmd.length; i++) {
+            const char = cmd[i];
+            if (char === '"' && (i === 0 || cmd[i-1] !== '\\')) {
+              inQuotes = !inQuotes;
+            } else if (char === ' ' && !inQuotes) {
+              if (current) {
+                parts.push(current);
+                current = '';
+              }
+            } else {
+              current += char;
+            }
+          }
+          if (current) {
+            parts.push(current);
+          }
+          
+          return {
+            executable: parts[0],
+            args: parts.slice(1)
+          };
+        };
+        
+        const { executable, args: execArgs } = parseCommand(command);
         
         // Add script arguments for PowerShell
         if (scriptType.type === 'powershell' && args.length > 0) {
