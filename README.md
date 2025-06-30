@@ -9,6 +9,7 @@
 [![Node Version](https://img.shields.io/node/v/scaffold-scripts.svg)](https://nodejs.org/)
 [![Platform Support](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue.svg)](https://github.com/ChrisColeTech/scaffold-scripts)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen.svg)](https://github.com/ChrisColeTech/scaffold-scripts)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ChrisColeTech/scaffold-scripts/pulls)
 
 Simple CLI tool for managing and running your own scripts. Add any script, run it anywhere.

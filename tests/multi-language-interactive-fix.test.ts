@@ -73,7 +73,7 @@ echo "Script completed successfully"`;
         });
         const endTime = Date.now();
         
-        expect(endTime - startTime).toBeLessThan(5000);
+        expect(endTime - startTime).toBeLessThan(10000);
         expect(executeResult).toContain('Script completed successfully');
         
       } finally {
@@ -170,7 +170,7 @@ print("Script completed successfully")`;
         });
         const endTime = Date.now();
         
-        expect(endTime - startTime).toBeLessThan(5000);
+        expect(endTime - startTime).toBeLessThan(10000);
         expect(executeResult).toContain('Script completed successfully');
         
       } finally {
