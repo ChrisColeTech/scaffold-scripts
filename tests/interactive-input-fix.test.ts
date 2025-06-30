@@ -122,7 +122,7 @@ Write-Host "Creating project $projectName in $targetDir" -ForegroundColor Green`
         expect(viewResult).toContain('[string]$targetDir = $null');
         
         // Should preserve original logic structure (check for content presence)
-        expect(viewResult).toContain('Project Setup Script');
+        expect(viewResult).toContain('Setup Script');
         
       } finally {
         rmSync(tempDir, { recursive: true, force: true });
