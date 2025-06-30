@@ -149,13 +149,13 @@ Write-Host "Hello $name"`;
           name: 'test-bash',
           file: 'test-bash.sh',
           content: `#!/bin/bash\necho "Enter name:"\nread name\necho "Hello $name"`,
-          shouldAutoFix: false // Bash auto-fix not implemented yet
+          shouldAutoFix: true // Bash auto-fix implemented
         },
         {
           name: 'test-python',
           file: 'test-python.py',
           content: `name = input("Enter name: ")\nprint(f"Hello {name}")`,
-          shouldAutoFix: false // Python auto-fix not implemented yet
+          shouldAutoFix: true // Python auto-fix implemented
         },
         {
           name: 'test-powershell',
@@ -344,7 +344,7 @@ Write-Host "Project created successfully at: $projectRoot" -ForegroundColor Gree
         
         // Should preserve all original logic
         const viewResult = execCLI('view test-real-world', { encoding: 'utf8' });
-        expect(viewResult).toContain('[string]$projectRoot = $null');
+        expect(viewResult).toContain('[string]$projectRoot = (Get-Location).Path');
         expect(viewResult).toContain('if ([string]::IsNullOrWhiteSpace($projectRoot))');
         expect(viewResult).toContain('New-Item -ItemType Directory');
         

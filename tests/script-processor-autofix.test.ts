@@ -3,8 +3,8 @@
  * Unit tests for the automatic interactive input fixing functionality
  */
 
-import { ScriptProcessor } from '../src/scriptProcessor';
-import { ScriptTypeDetector } from '../src/scriptTypeDetector';
+import { ScriptProcessor } from '../src/scriptProcessor.js';
+import { ScriptTypeDetector } from '../src/scriptTypeDetector.js';
 
 describe('ScriptProcessor - Interactive Input Auto-Fix', () => {
   let processor: ScriptProcessor;
