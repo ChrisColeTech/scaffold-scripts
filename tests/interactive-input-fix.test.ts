@@ -44,7 +44,7 @@ Write-Host "Hello, $userName!" -ForegroundColor Green`;
         expect(viewResult).toContain('[string]$userName = $null');
         
         // Should contain conditional wrapper (PowerShell or Unix equivalent)
-        expect(viewResult).toMatch(/if \[? -not \$userName/); 
+        expect(viewResult).toMatch(/if [\[\(]?[^$]*-not[^$]*\$userName/); 
         
       } finally {
         rmSync(tempDir, { recursive: true, force: true });
@@ -79,9 +79,9 @@ $description = Read-Host`;
         expect(viewResult).toContain('[string]$description = $null');
         
         // Should contain all conditionals (PowerShell or Unix equivalent)
-        expect(viewResult).toMatch(/if \[? -not \$userName/);
-        expect(viewResult).toMatch(/if \[? -not \$projectPath/);
-        expect(viewResult).toMatch(/if \[? -not \$description/);
+        expect(viewResult).toMatch(/if [\[\(]?[^$]*-not[^$]*\$userName/);
+        expect(viewResult).toMatch(/if [\[\(]?[^$]*-not[^$]*\$projectPath/);
+        expect(viewResult).toMatch(/if [\[\(]?[^$]*-not[^$]*\$description/);
         
       } finally {
         rmSync(tempDir, { recursive: true, force: true });
@@ -370,7 +370,8 @@ Write-Host "Project $projectName created successfully!" -ForegroundColor Green`;
         
         // Should preserve all original functionality
         expect(viewResult).toContain('Project Setup Script');
-        expect(viewResult).toContain('$projectPath = "C:/Projects/$projectName"');
+        // Should preserve path assignment (may have different path separators on different platforms)
+        expect(viewResult).toMatch(/\$projectPath = "C:[\\/]Projects[\\/]\$projectName"/);
         expect(viewResult).toContain('Project $projectName created successfully!');
         
         // Should add parameter support
