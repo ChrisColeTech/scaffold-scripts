@@ -300,11 +300,13 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
       scriptToExecute = command.script_original
     }
     const result = await executor.executeScript(scriptToExecute, command.platform, [], command.script_type)
-    console.log(chalk.green(`${sym.check()} Script completed successfully!`))
-
-    if (result.stdout) {
-      console.log('\n--- Output ---')
-      console.log(result.stdout)
+    console.log(chalk.green(`\n${sym.check()} Script completed successfully!`))
+    
+    // Output is now streamed in real-time, so we don't need to display it again
+    // Only show stderr if there were any non-fatal errors
+    if (result.stderr && result.stderr.trim()) {
+      console.log(chalk.yellow('\n--- Warnings/Errors ---'))
+      console.log(result.stderr)
     }
   }
 }
