@@ -3,8 +3,8 @@
  * Unit tests for the automatic interactive input fixing functionality
  */
 
-import { ScriptProcessor } from '../src/scriptProcessor.js';
-import { ScriptTypeDetector } from '../src/scriptTypeDetector.js';
+import { ScriptProcessor } from '../dist/scriptProcessor.js';
+import { ScriptTypeDetector } from '../dist/scriptTypeDetector.js';
 
 describe('ScriptProcessor - Interactive Input Auto-Fix', () => {
   let processor: ScriptProcessor;
@@ -129,7 +129,7 @@ Write-Host "Creating $projectName in $targetDir" -ForegroundColor Green`;
       expect(result.original).toContain('Write-Host "Creating $projectName in $targetDir"');
     });
 
-    it('should handle scripts with existing parameter blocks', async () => {
+    it('should not modify scripts with existing parameter blocks', async () => {
       const originalScript = `param(
     [string]$ExistingParam = "default"
 )
@@ -139,14 +139,17 @@ $newParam = Read-Host "New value"`;
 
       const result = await processor.processScriptContent(originalScript);
 
-      // Should preserve existing parameter
+      // Should preserve existing parameter block unchanged
       expect(result.original).toContain('[string]$ExistingParam = "default"');
 
-      // Should add new parameter for Read-Host
-      expect(result.original).toContain('[string]$newParam = $null');
+      // Should NOT add new parameters (because param block already exists)
+      expect(result.original).not.toContain('[string]$newParam = $null');
 
-      // Should have conditional for new parameter
-      expect(result.original).toContain('if (-not $newParam)');
+      // Should NOT add conditionals (because script already has param block)
+      expect(result.original).not.toContain('if (-not $newParam)');
+      
+      // Should preserve the original Read-Host unchanged
+      expect(result.original).toContain('$newParam = Read-Host "New value"');
     });
 
     it('should be disabled when fixInteractiveInput option is false', async () => {
