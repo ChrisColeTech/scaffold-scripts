@@ -371,7 +371,7 @@ Write-Host "Project $projectName created successfully!" -ForegroundColor Green`;
         // Should preserve all original functionality
         expect(viewResult).toContain('Project Setup Script');
         // Should preserve path assignment (may have different path separators on different platforms)
-        expect(viewResult).toMatch(/\$projectPath = "C:[\\/]Projects[\\/]\$projectName"/);
+        expect(viewResult).toMatch(/\$projectPath = "C:[\\/\\\\]+Projects[\\/\\\\]+\$projectName"/);
         expect(viewResult).toContain('Project $projectName created successfully!');
         
         // Should add parameter support

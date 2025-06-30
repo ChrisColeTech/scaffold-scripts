@@ -103,8 +103,8 @@ echo "Root: $projectRoot"`;
         const viewResult = execCLI('view test-bash-multiple', { encoding: 'utf8' });
         expect(viewResult).toContain('userName=${1:-"default"}');
         expect(viewResult).toContain('userEmail=${2:-"default"}');
-        // projectRoot should get current directory default (may be any parameter position)
-        expect(viewResult).toMatch(/projectRoot=\${.*:-\$\(pwd\)}/);
+        // projectRoot should get current directory default (may be any parameter position, different commands on different platforms)
+        expect(viewResult).toMatch(/projectRoot=\${.*:-\$\((pwd|Get-Location)\)}/);
         
       } finally {
         rmSync(tempDir, { recursive: true, force: true });
