@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { exec, spawn, ChildProcess } from 'child_process';
 import { promisify } from 'util';
 import { platform } from 'os';
 import { ScriptTypeDetector, ScriptTypeInfo } from './scriptTypeDetector.js';
@@ -114,7 +114,7 @@ export class ScriptExecutor {
   }
 
   /**
-   * Execute the script in the current directory
+   * Execute the script in the current directory with real-time output streaming
    */
   async executeScript(script: string, targetPlatform?: string, args: string[] = [], knownScriptType?: string): Promise<{ stdout: string; stderr: string }> {
     const scriptType = knownScriptType ? 
@@ -130,7 +130,7 @@ export class ScriptExecutor {
 
     // For Python, Node.js, PowerShell, or other interpreter-based scripts, create a temporary file
     if (['python', 'nodejs', 'powershell'].includes(scriptType.type)) {
-      return this.executeInterpreterScript(script, scriptType, args);
+      return this.executeInterpreterScriptWithStreaming(script, scriptType, args);
     }
     
     // For shell/batch scripts, use the converted approach
@@ -140,44 +140,88 @@ export class ScriptExecutor {
     console.log(convertedScript);
     console.log('--- End Script ---\\n');
     
-    try {
-      // Detect best available PowerShell on all platforms
-      let shell = '/bin/bash';
-      
-      if (this.isWindows) {
-        // On Windows, try powershell.exe first, then pwsh as fallback
-        try {
-          await execAsync('where powershell.exe', { timeout: 1000 });
-          shell = 'powershell.exe';
-        } catch {
+    return this.executeWithStreaming(convertedScript);
+  }
+
+  /**
+   * Execute a command with real-time output streaming
+   */
+  private async executeWithStreaming(command: string): Promise<{ stdout: string; stderr: string }> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Detect best available shell
+        let shell = '/bin/bash';
+        let shellArgs = ['-c'];
+        
+        if (this.isWindows) {
+          // On Windows, try powershell.exe first, then pwsh as fallback
           try {
-            await execAsync('where pwsh', { timeout: 1000 });
-            shell = 'pwsh';
+            await execAsync('where powershell.exe', { timeout: 1000 });
+            shell = 'powershell.exe';
+            shellArgs = ['-Command'];
           } catch {
-            // If neither PowerShell is available on Windows, use cmd
-            shell = 'cmd';
+            try {
+              await execAsync('where pwsh', { timeout: 1000 });
+              shell = 'pwsh';
+              shellArgs = ['-Command'];
+            } catch {
+              // If neither PowerShell is available on Windows, use cmd
+              shell = 'cmd';
+              shellArgs = ['/c'];
+            }
+          }
+        } else {
+          // On Unix-like systems, try pwsh first, then bash as fallback
+          try {
+            await execAsync('which pwsh', { timeout: 1000 });
+            shell = 'pwsh';
+            shellArgs = ['-Command'];
+          } catch {
+            shell = '/bin/bash';
+            shellArgs = ['-c'];
           }
         }
-      } else {
-        // On Unix-like systems, try pwsh first, then bash as fallback
-        try {
-          await execAsync('which pwsh', { timeout: 1000 });
-          shell = 'pwsh';
-        } catch {
-          shell = '/bin/bash';
-        }
+
+        const child = spawn(shell, [...shellArgs, command], {
+          cwd: process.cwd(),
+          stdio: ['inherit', 'pipe', 'pipe']
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        // Stream stdout in real-time
+        child.stdout?.on('data', (data) => {
+          const output = data.toString();
+          stdout += output;
+          // Write directly to stdout to preserve formatting
+          process.stdout.write(output);
+        });
+
+        // Stream stderr in real-time
+        child.stderr?.on('data', (data) => {
+          const output = data.toString();
+          stderr += output;
+          // Write directly to stderr to preserve formatting
+          process.stderr.write(output);
+        });
+
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve({ stdout, stderr });
+          } else {
+            reject(new Error(`Script execution failed with exit code ${code}`));
+          }
+        });
+
+        child.on('error', (error) => {
+          reject(new Error(`Script execution failed: ${error.message}`));
+        });
+
+      } catch (error: any) {
+        reject(new Error(`Script execution failed: ${error.message}`));
       }
-      
-      const result = await execAsync(convertedScript, { 
-        shell,
-        cwd: process.cwd(),
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
-      });
-      
-      return result;
-    } catch (error: any) {
-      throw new Error(`Script execution failed: ${error.message}`);
-    }
+    });
   }
 
   /**
@@ -214,6 +258,79 @@ export class ScriptExecutor {
     } catch (error: any) {
       throw new Error(`${scriptType.type} script execution failed: ${error.message}`);
     }
+  }
+
+  /**
+   * Execute interpreter-based scripts with real-time output streaming
+   */
+  private async executeInterpreterScriptWithStreaming(script: string, scriptType: any, args: string[] = []): Promise<{ stdout: string; stderr: string }> {
+    return new Promise((resolve, reject) => {
+      // Create temporary directory
+      const tempDir = join(tmpdir(), 'scaffold-scripts');
+      mkdirSync(tempDir, { recursive: true });
+      
+      // Create temporary script file
+      const extension = scriptType.extensions[0];
+      const tempFile = join(tempDir, `temp_script${extension}`);
+      writeFileSync(tempFile, script);
+      
+      console.log(`\\n--- Executing ${scriptType.type} Script ---`);
+      console.log(script);
+      console.log('--- End Script ---\\n');
+      
+      try {
+        let command = this.typeDetector.getExecutionCommand(scriptType, tempFile);
+        
+        // Parse command and arguments for spawn
+        const parts = command.split(' ');
+        const executable = parts[0];
+        const execArgs = parts.slice(1);
+        
+        // Add script arguments for PowerShell
+        if (scriptType.type === 'powershell' && args.length > 0) {
+          execArgs.push(...args);
+        }
+        
+        const child = spawn(executable, execArgs, {
+          cwd: process.cwd(),
+          stdio: ['inherit', 'pipe', 'pipe']
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        // Stream stdout in real-time
+        child.stdout?.on('data', (data) => {
+          const output = data.toString();
+          stdout += output;
+          // Write directly to stdout to preserve formatting
+          process.stdout.write(output);
+        });
+
+        // Stream stderr in real-time
+        child.stderr?.on('data', (data) => {
+          const output = data.toString();
+          stderr += output;
+          // Write directly to stderr to preserve formatting
+          process.stderr.write(output);
+        });
+
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve({ stdout, stderr });
+          } else {
+            reject(new Error(`${scriptType.type} script execution failed with exit code ${code}`));
+          }
+        });
+
+        child.on('error', (error) => {
+          reject(new Error(`${scriptType.type} script execution failed: ${error.message}`));
+        });
+
+      } catch (error: any) {
+        reject(new Error(`${scriptType.type} script execution failed: ${error.message}`));
+      }
+    });
   }
 
   /**
