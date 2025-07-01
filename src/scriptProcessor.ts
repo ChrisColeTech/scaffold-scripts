@@ -102,18 +102,14 @@ export class ScriptProcessor {
           })
           .join(",\n")}\n)\n\n`;
 
-        // Replace Read-Host with parameter fallback that shows current directory
-        for (const match of matches) {
-          const varName = match[1];
-          const originalPattern = match[0];
-          let replacement;
+        // Replace Read-Host with parameter fallback in single pass
+        script = script.replace(readHostPattern, (match, varName) => {
           if (varName.toLowerCase().includes('root') || varName.toLowerCase().includes('path')) {
-            replacement = `if (-not $${varName}) {\n    Write-Host "Using current directory: $(Get-Location)" -ForegroundColor Green\n    $${varName} = (Get-Location).Path\n}`;
+            return `if (-not $${varName}) {\n    Write-Host "Using current directory: $(Get-Location)" -ForegroundColor Green\n    $${varName} = (Get-Location).Path\n}`;
           } else {
-            replacement = `if (-not $${varName}) {\n    ${originalPattern}\n}`;
+            return `if (-not $${varName}) {\n    ${match}\n}`;
           }
-          script = script.replace(originalPattern, replacement);
-        }
+        });
 
         script = paramBlock + script;
       }
