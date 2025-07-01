@@ -24,6 +24,30 @@ export class ScriptProcessor {
   private validator = new ScriptValidator();
 
   /**
+   * Get script type from file path
+   */
+  getScriptTypeFromPath(scriptPath: string): string {
+    const extension = scriptPath.toLowerCase().split('.').pop() || '';
+    
+    switch (extension) {
+      case 'sh':
+      case 'bash':
+        return 'shell';
+      case 'ps1':
+        return 'powershell';
+      case 'py':
+        return 'python';
+      case 'js':
+        return 'nodejs';
+      case 'bat':
+      case 'cmd':
+        return 'batch';
+      default:
+        return 'shell'; // default fallback
+    }
+  }
+
+  /**
    * Automatically fix interactive input issues in scripts
    */
   private fixInteractiveInput(script: string, scriptType: any): string {
@@ -258,6 +282,7 @@ console.log('Setup completed!');`;
       allowNetworkAccess?: boolean;
       allowSystemModification?: boolean;
       fixInteractiveInput?: boolean;
+      shouldConvert?: boolean;
     } = {}
   ): Promise<ProcessedScript> {
     // 1. Validate file type and read the script
@@ -315,6 +340,7 @@ console.log('Setup completed!');`;
       allowNetworkAccess?: boolean;
       allowSystemModification?: boolean;
       fixInteractiveInput?: boolean;
+      shouldConvert?: boolean;
     } = {}
   ): Promise<ProcessedScript> {
     // 1. Validate the original script
@@ -343,17 +369,30 @@ console.log('Setup completed!');`;
       }
     }
 
-    // 5. Generate cross-platform versions
-    const versions = this.converter.generateVersions(
-      sanitizedScript,
-      scriptType,
-      originalPlatform
-    );
+    // 5. Generate cross-platform versions (only if shouldConvert is true, defaults to true for backward compatibility)
+    let versions: { windows?: string; unix?: string; crossPlatform?: string } = {};
+    
+    if (options.shouldConvert !== false) {
+      const generatedVersions = this.converter.generateVersions(
+        sanitizedScript,
+        scriptType,
+        originalPlatform
+      );
+      versions = {
+        windows: generatedVersions.windows,
+        unix: generatedVersions.unix,
+        crossPlatform: generatedVersions.crossPlatform
+      };
 
-    // 6. Additional validation warnings for cross-platform compatibility
-    if (originalPlatform !== "cross-platform") {
+      // 6. Additional validation warnings for cross-platform compatibility
+      if (originalPlatform !== "cross-platform") {
+        validation.warnings.push(
+          `Script appears to be ${originalPlatform}-specific. Generated cross-platform versions may need manual review.`
+        );
+      }
+    } else {
       validation.warnings.push(
-        `Script appears to be ${originalPlatform}-specific. Generated cross-platform versions may need manual review.`
+        `Conversion skipped - script will only be available in its original format.`
       );
     }
 

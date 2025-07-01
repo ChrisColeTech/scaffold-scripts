@@ -9,6 +9,7 @@ import { ScaffoldDatabase, ScaffoldCommand } from './database.js'
 import { ScriptExecutor } from './scriptExecutor.js'
 import { ScriptValidator } from './scriptValidator.js'
 import { ScriptProcessor } from './scriptProcessor.js'
+import { SystemCapabilityChecker } from './systemCapabilities.js'
 import { sym } from './symbols.js'
 import { UsageHelper } from './usageHelper.js'
 
@@ -21,6 +22,7 @@ const db = new ScaffoldDatabase()
 const executor = new ScriptExecutor()
 const validator = new ScriptValidator()
 const processor = new ScriptProcessor()
+const systemChecker = SystemCapabilityChecker.getInstance()
 
 program
   .name('scaffold')
@@ -62,6 +64,12 @@ program
     if (scriptName) {
       await handleScriptCommand(scriptName, false, options)
     } else {
+      // Check if we're in a test environment - don't enter interactive mode
+      if (process.env.NODE_ENV === 'test' || process.env.CI || !process.stdin.isTTY) {
+        await listCommands(false)
+        return
+      }
+      
       // Interactive mode when no script name provided
       const selectedScript = await selectScriptInteractively()
 
@@ -107,6 +115,7 @@ program
   .argument('<name>', 'script name')
   .argument('<scriptPath>', 'path to script file')
   .option('-p, --platform <platform>', 'target platform: all, windows, or unix', 'all')
+  .option('-c, --convert', 'force conversion to multiple script types')
   .option('--strict', 'use strict validation')
   .option('--no-validate', 'skip validation (use with caution)')
   .on('--help', () => {
@@ -258,6 +267,12 @@ program
 
 // Interactive script selector
 async function selectScriptInteractively(): Promise<string | null> {
+  // Never allow interactive mode in test environments
+  if (process.env.NODE_ENV === 'test' || process.env.CI || !process.stdin.isTTY) {
+    console.log('No scripts available.')
+    return null
+  }
+
   const commands = await db.listCommands()
 
   if (commands.length === 0) {
@@ -320,6 +335,17 @@ async function selectScriptInteractively(): Promise<string | null> {
 
 // Clear all commands
 async function clearAllCommands() {
+  // Skip confirmation in test environments
+  if (process.env.NODE_ENV === 'test' || process.env.CI || !process.stdin.isTTY) {
+    const deletedCount = await db.clearAllCommands()
+    if (deletedCount > 0) {
+      console.log(chalk.green(`${sym.check()} Successfully cleared ${deletedCount} script(s) from the database.`))
+    } else {
+      console.log(chalk.blue(`${sym.info()} No scripts were found to clear.`))
+    }
+    return
+  }
+
   console.log(chalk.yellow(`${sym.warning()} This will permanently delete ALL scripts from your database.`))
   
   const confirmation = await prompts({
@@ -403,13 +429,52 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
         versionUsed = 'original (cross-platform not available)';
       }
     } else {
-      // Default behavior - auto-select best version
-      if (['powershell', 'nodejs', 'python'].includes(command.script_type)) {
+      // Default behavior - auto-select best version based on system capabilities
+      const canExecuteOriginal = await systemChecker.canExecuteScriptType(command.script_type);
+      const bestExecutor = await systemChecker.getBestExecutor(command.script_type);
+      
+      if (canExecuteOriginal && bestExecutor) {
+        // We can execute the original script type natively
         scriptToExecute = command.script_original;
-        versionUsed = 'original (interpreter-based)';
+        versionUsed = `original (${bestExecutor})`;
       } else {
-        scriptToExecute = processor.getBestScript(command);
-        versionUsed = 'auto-selected';
+        // Try to find a converted version we can execute
+        const capabilities = await systemChecker.getCapabilities();
+        let foundExecutableVersion = false;
+        
+        // Check Windows version if we have PowerShell
+        if (command.script_windows && capabilities.canRunPowerShell) {
+          scriptToExecute = command.script_windows;
+          versionUsed = 'Windows (PowerShell)';
+          foundExecutableVersion = true;
+        }
+        // Check Unix version if we have shell
+        else if (command.script_unix && capabilities.canRunShell) {
+          scriptToExecute = command.script_unix;
+          versionUsed = 'Unix (shell)';
+          foundExecutableVersion = true;
+        }
+        // Check cross-platform version
+        else if (command.script_cross_platform) {
+          scriptToExecute = command.script_cross_platform;
+          versionUsed = 'cross-platform';
+          foundExecutableVersion = true;
+        }
+        
+        if (!foundExecutableVersion) {
+          // Fall back to original and hope for the best
+          scriptToExecute = command.script_original;
+          versionUsed = 'original (no suitable executor found)';
+          console.log(chalk.yellow(`${sym.warning()} No suitable executor found for ${command.script_type} scripts`));
+          
+          const platformInfo = await systemChecker.getPlatformInfo();
+          if (platformInfo.recommendations.length > 0) {
+            console.log(chalk.blue(`${sym.bulb()} To improve compatibility:`));
+            platformInfo.recommendations.forEach(rec => {
+              console.log(chalk.blue(`   • ${rec}`));
+            });
+          }
+        }
       }
     }
 
@@ -443,11 +508,49 @@ async function addCommand(name: string, scriptPath: string, options: any) {
   try {
     console.log(chalk.blue(`${sym.package()} Processing script: ${name}`))
 
+    // Check system capabilities first
+    console.log(chalk.blue(`\n${sym.search()} Checking System Capabilities...`))
+    const capabilities = await systemChecker.getCapabilities()
+    const platformInfo = await systemChecker.getPlatformInfo()
+    
+    console.log(chalk.gray(`   Platform: ${platformInfo.platform}`))
+    console.log(chalk.gray(`   Shell Support: ${capabilities.canRunShell ? `${sym.check()} Available` : `${sym.cross()} Not available`}`))
+    console.log(chalk.gray(`   PowerShell Support: ${capabilities.canRunPowerShell ? `${sym.check()} Available` : `${sym.cross()} Not available`}`))
+    console.log(chalk.gray(`   Python Support: ${capabilities.canRunPython ? `${sym.check()} Available` : `${sym.cross()} Not available`}`))
+    console.log(chalk.gray(`   Node.js Support: ${capabilities.canRunJavaScript ? `${sym.check()} Available` : `${sym.cross()} Not available`}`))
+
+    // Determine script type from file extension
+    const scriptType = processor.getScriptTypeFromPath(scriptPath)
+    console.log(chalk.blue(`\n${sym.file()} Script Type: ${scriptType}`))
+
+    // Check if we can execute this script type
+    const canExecuteNatively = await systemChecker.canExecuteScriptType(scriptType)
+    const shouldConvert = options.convert || !canExecuteNatively
+
+    if (options.convert) {
+      console.log(chalk.yellow(`${sym.warning()} Force conversion enabled via --convert flag`))
+    } else if (!canExecuteNatively) {
+      console.log(chalk.yellow(`${sym.warning()} Cannot execute ${scriptType} scripts natively - conversion recommended`))
+      const executor = await systemChecker.getBestExecutor(scriptType)
+      if (!executor) {
+        console.log(chalk.red(`${sym.cross()} No suitable executor found for ${scriptType} scripts`))
+        if (platformInfo.recommendations.length > 0) {
+          console.log(chalk.blue(`\n${sym.bulb()} Recommendations:`))
+          platformInfo.recommendations.forEach(rec => {
+            console.log(chalk.blue(`   • ${rec}`))
+          })
+        }
+      }
+    } else {
+      console.log(chalk.green(`${sym.check()} Can execute ${scriptType} scripts natively`))
+    }
+
     // Process the script using the production-ready processor
     const processedScript = await processor.processScriptFile(scriptPath, {
       strict: options.strict || false,
       allowNetworkAccess: !options.strict,
       allowSystemModification: !options.strict,
+      shouldConvert: shouldConvert,
     })
 
     // Display validation results

@@ -14,7 +14,9 @@ const TEST_DB_DIR = join(tmpdir(), '.scaffold-scripts-test-' + process.pid + '-'
 // Export the test environment for use in tests
 export const TEST_ENV = { 
   ...process.env, 
-  SCAFFOLD_SCRIPTS_DB_DIR: TEST_DB_DIR 
+  SCAFFOLD_SCRIPTS_DB_DIR: TEST_DB_DIR,
+  NODE_ENV: 'test',
+  CI: 'true'
 };
 
 // Export CLI path and helper function
@@ -28,7 +30,9 @@ export function execCLI(command: string, options: any = {}): any {
   try {
     return execSync(`node ${CLI_PATH} ${command}`, {
       ...options,
-      env: TEST_ENV
+      env: TEST_ENV,
+      stdio: 'pipe', // Prevent interactive input
+      timeout: 30000 // 30 second timeout
     });
   } catch (error: any) {
     // For CLI commands that exit with non-zero (like validation errors),
