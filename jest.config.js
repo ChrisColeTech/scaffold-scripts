@@ -14,8 +14,8 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
   testTimeout: 60000, // Increased for CI environments
-  // Run tests serially to avoid database conflicts
-  maxWorkers: 1,
+  // Allow parallel test execution for better performance  
+  maxWorkers: process.env.CI ? 1 : 2,
   // Ensure tests are isolated
   resetMocks: true,
   restoreMocks: true,

@@ -1104,16 +1104,18 @@ async function uninstallCommand() {
   }
 }
 
-// Handle process termination
-process.on('SIGINT', () => {
-  if (db) db.close()
-  process.exit(0)
-})
+// Handle process termination (only in production, not during testing)
+if (process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID) {
+  process.on('SIGINT', () => {
+    if (db) db.close()
+    process.exit(0)
+  })
 
-process.on('SIGTERM', () => {
-  if (db) db.close()
-  process.exit(0)
-})
+  process.on('SIGTERM', () => {
+    if (db) db.close()
+    process.exit(0)
+  })
+}
 
 // Parse command line arguments with error handling
 try {
