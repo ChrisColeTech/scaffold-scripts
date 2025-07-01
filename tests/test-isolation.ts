@@ -32,7 +32,8 @@ export function execCLI(command: string, options: any = {}): any {
       ...options,
       env: TEST_ENV,
       stdio: 'pipe', // Prevent interactive input
-      timeout: 30000 // 30 second timeout
+      timeout: 10000, // Reduced to 10 seconds
+      windowsHide: true // Hide Windows console windows to improve performance
     });
   } catch (error: any) {
     // For CLI commands that exit with non-zero (like validation errors),

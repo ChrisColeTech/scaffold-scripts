@@ -18,11 +18,22 @@ const packageJsonPath = join(__dirname, '..', 'package.json')
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 
 const program = new Command()
-const db = new ScaffoldDatabase()
+// Lazy-load expensive components only when needed
+let db: ScaffoldDatabase | null = null;
+function getDatabase() {
+  if (!db) {
+    db = new ScaffoldDatabase();
+  }
+  return db;
+}
+
 const executor = new ScriptExecutor()
 const validator = new ScriptValidator()
 const processor = new ScriptProcessor()
-const systemChecker = SystemCapabilityChecker.getInstance()
+
+function getSystemChecker() {
+  return SystemCapabilityChecker.getInstance();
+}
 
 program
   .name('scaffold')
@@ -184,7 +195,7 @@ program
     try {
       if (options.yes) {
         // Skip confirmation and clear directly
-        const deletedCount = await db.clearAllCommands()
+        const deletedCount = await getDatabase().clearAllCommands()
         if (deletedCount > 0) {
           console.log(chalk.green(`${sym.check()} Successfully cleared ${deletedCount} script(s) from the database.`))
         } else {
@@ -273,7 +284,7 @@ async function selectScriptInteractively(): Promise<string | null> {
     return null
   }
 
-  const commands = await db.listCommands()
+  const commands = await getDatabase().listCommands()
 
   if (commands.length === 0) {
     console.log(chalk.yellow('No scripts available.'))
@@ -337,7 +348,7 @@ async function selectScriptInteractively(): Promise<string | null> {
 async function clearAllCommands() {
   // Skip confirmation in test environments
   if (process.env.NODE_ENV === 'test' || process.env.CI || !process.stdin.isTTY) {
-    const deletedCount = await db.clearAllCommands()
+    const deletedCount = await getDatabase().clearAllCommands()
     if (deletedCount > 0) {
       console.log(chalk.green(`${sym.check()} Successfully cleared ${deletedCount} script(s) from the database.`))
     } else {
@@ -361,7 +372,7 @@ async function clearAllCommands() {
   }
 
   try {
-    const deletedCount = await db.clearAllCommands()
+    const deletedCount = await getDatabase().clearAllCommands()
     if (deletedCount > 0) {
       console.log(chalk.green(`${sym.check()} Successfully cleared ${deletedCount} script(s) from the database.`))
     } else {
@@ -375,13 +386,13 @@ async function clearAllCommands() {
 // Handle script commands
 async function handleScriptCommand(scriptName: string, viewOnly: boolean = false, versionOptions?: any) {
   // Try to find by name first, then by alias
-  let command = await db.getCommand(scriptName)
+  let command = await getDatabase().getCommand(scriptName)
   if (!command) {
-    command = await db.getCommandByAlias(scriptName)
+    command = await getDatabase().getCommandByAlias(scriptName)
   }
 
   if (!command) {
-    const commands = await db.listCommands()
+    const commands = await getDatabase().listCommands()
     const scriptNames = commands.map(cmd => cmd.name)
     UsageHelper.displayScriptNotFound(scriptName, scriptNames);
     return
@@ -430,6 +441,7 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
       }
     } else {
       // Default behavior - auto-select best version based on system capabilities
+      const systemChecker = getSystemChecker();
       const canExecuteOriginal = await systemChecker.canExecuteScriptType(command.script_type);
       const bestExecutor = await systemChecker.getBestExecutor(command.script_type);
       
@@ -439,6 +451,7 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
         versionUsed = `original (${bestExecutor})`;
       } else {
         // Try to find a converted version we can execute
+        const systemChecker = getSystemChecker();
         const capabilities = await systemChecker.getCapabilities();
         let foundExecutableVersion = false;
         
@@ -467,6 +480,7 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
           versionUsed = 'original (no suitable executor found)';
           console.log(chalk.yellow(`${sym.warning()} No suitable executor found for ${command.script_type} scripts`));
           
+          const systemChecker = getSystemChecker();
           const platformInfo = await systemChecker.getPlatformInfo();
           if (platformInfo.recommendations.length > 0) {
             console.log(chalk.blue(`${sym.bulb()} To improve compatibility:`));
@@ -510,8 +524,9 @@ async function addCommand(name: string, scriptPath: string, options: any) {
 
     // Check system capabilities first
     console.log(chalk.blue(`\n${sym.search()} Checking System Capabilities...`))
-    const capabilities = await systemChecker.getCapabilities()
-    const platformInfo = await systemChecker.getPlatformInfo()
+    const checker = getSystemChecker();
+    const capabilities = await checker.getCapabilities()
+    const platformInfo = await checker.getPlatformInfo()
     
     console.log(chalk.gray(`   Platform: ${platformInfo.platform}`))
     console.log(chalk.gray(`   Shell Support: ${capabilities.canRunShell ? `${sym.check()} Available` : `${sym.cross()} Not available`}`))
@@ -524,14 +539,15 @@ async function addCommand(name: string, scriptPath: string, options: any) {
     console.log(chalk.blue(`\n${sym.file()} Script Type: ${scriptType}`))
 
     // Check if we can execute this script type
-    const canExecuteNatively = await systemChecker.canExecuteScriptType(scriptType)
+    const checker2 = getSystemChecker();
+    const canExecuteNatively = await checker2.canExecuteScriptType(scriptType)
     const shouldConvert = options.convert || !canExecuteNatively
 
     if (options.convert) {
       console.log(chalk.yellow(`${sym.warning()} Force conversion enabled via --convert flag`))
     } else if (!canExecuteNatively) {
       console.log(chalk.yellow(`${sym.warning()} Cannot execute ${scriptType} scripts natively - conversion recommended`))
-      const executor = await systemChecker.getBestExecutor(scriptType)
+      const executor = await checker2.getBestExecutor(scriptType)
       if (!executor) {
         console.log(chalk.red(`${sym.cross()} No suitable executor found for ${scriptType} scripts`))
         if (platformInfo.recommendations.length > 0) {
@@ -606,7 +622,7 @@ async function addCommand(name: string, scriptPath: string, options: any) {
     })
 
     // Save to database
-    await db.addCommand(command)
+    await getDatabase().addCommand(command)
 
     console.log(chalk.green(`${sym.check()} Added script "${name}"`))
 
@@ -641,7 +657,7 @@ async function addCommand(name: string, scriptPath: string, options: any) {
 // Update existing command - Production Ready Version
 async function updateCommand(name: string, scriptPath: string, options: any) {
   try {
-    const existing = await db.getCommand(name)
+    const existing = await getDatabase().getCommand(name)
     if (!existing) {
       console.error(chalk.red(`Script "${name}" not found.`))
       return
@@ -715,7 +731,7 @@ async function updateCommand(name: string, scriptPath: string, options: any) {
 
     if (options.platform !== undefined) updates.platform = options.platform
 
-    const success = await db.updateCommand(name, updates)
+    const success = await getDatabase().updateCommand(name, updates)
     if (success) {
       console.log(chalk.green(`\n${sym.check()} Updated script "${name}"`))
 
@@ -754,7 +770,7 @@ async function updateCommand(name: string, scriptPath: string, options: any) {
 
 // Remove command
 async function removeCommand(name: string) {
-  const success = await db.removeCommand(name)
+  const success = await getDatabase().removeCommand(name)
   if (success) {
     console.log(chalk.green(`${sym.check()} Removed script "${name}"`))
   } else {
@@ -764,7 +780,7 @@ async function removeCommand(name: string) {
 
 // List commands
 async function listCommands(detailed: boolean = false) {
-  const commands = await db.listCommands()
+  const commands = await getDatabase().listCommands()
 
   if (commands.length === 0) {
     console.log(chalk.gray('No scripts available.'))
@@ -895,7 +911,7 @@ async function exportCommand(directory: string) {
   }
 
   // Get all commands
-  const commands = await db.listCommands()
+  const commands = await getDatabase().listCommands()
 
   if (commands.length === 0) {
     console.log(chalk.yellow('No scripts to export'))
@@ -992,7 +1008,7 @@ async function uninstallCommand() {
   console.log(chalk.blue('===================================='))
 
   // Check if user has any scripts
-  const commands = await db.listCommands()
+  const commands = await getDatabase().listCommands()
   let exportDirectory: string | null = null
   let keepData = false
 
@@ -1090,12 +1106,12 @@ async function uninstallCommand() {
 
 // Handle process termination
 process.on('SIGINT', () => {
-  db.close()
+  if (db) db.close()
   process.exit(0)
 })
 
 process.on('SIGTERM', () => {
-  db.close()
+  if (db) db.close()
   process.exit(0)
 })
 
