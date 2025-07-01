@@ -415,7 +415,18 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
 
     console.log(chalk.gray(`Using ${versionUsed} version`));
     
-    const result = await executor.executeScript(scriptToExecute, command.platform, [], command.script_type)
+    // Determine the appropriate script type based on version being executed
+    let effectiveScriptType = command.script_type;
+    if (versionOptions?.windows && command.script_windows) {
+      // Only change to PowerShell if original was shell/bash (converted version)
+      if (command.script_type === 'shell') {
+        effectiveScriptType = 'powershell'; // Windows version should run as PowerShell
+      }
+    }
+    // Unix versions and other types keep their original script type
+    // Python stays Python, JavaScript stays JavaScript, etc.
+    
+    const result = await executor.executeScript(scriptToExecute, command.platform, [], effectiveScriptType)
     console.log(chalk.green(`\n${sym.check()} Script completed successfully!`))
     
     // Output is now streamed in real-time, so we don't need to display it again
