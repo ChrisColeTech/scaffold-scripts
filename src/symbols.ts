@@ -24,6 +24,7 @@ const symbols: SymbolMap = {
   wrench: { emoji: '🔧', fallback: '[CFG]' },
   folder: { emoji: '🗂️', fallback: '[DIR]' },
   page: { emoji: '📄', fallback: '[DOC]' },
+  file: { emoji: '📁', fallback: '[FILE]' },
   diamond: { emoji: '🔸', fallback: '*' },
   target: { emoji: '🎯', fallback: '=>' },
   info: { emoji: 'ℹ️', fallback: '[i]' }
@@ -83,6 +84,7 @@ export const sym = {
   wrench: () => getSymbol('wrench'),
   folder: () => getSymbol('folder'),
   page: () => getSymbol('page'),
+  file: () => getSymbol('file'),
   diamond: () => getSymbol('diamond'),
   target: () => getSymbol('target'),
   info: () => getSymbol('info')
