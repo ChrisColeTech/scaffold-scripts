@@ -52,7 +52,7 @@ describe('Version Selection Features', () => {
     });
 
     it('should run Windows version with --windows flag', () => {
-      const addResult = execCLI(`add test-script "${scriptFile}"`, { encoding: 'utf8' });
+      const addResult = execCLI(`add test-script "${scriptFile}" --convert`, { encoding: 'utf8' });
       expect(addResult).toContain('Added script "test-script"');
 
       const runResult = execCLI('test-script --windows', { encoding: 'utf8' });
@@ -62,7 +62,7 @@ describe('Version Selection Features', () => {
     });
 
     it('should run Unix version with --unix flag', () => {
-      const addResult = execCLI(`add test-script "${scriptFile}"`, { encoding: 'utf8' });
+      const addResult = execCLI(`add test-script "${scriptFile}" --convert`, { encoding: 'utf8' });
       expect(addResult).toContain('Added script "test-script"');
 
       const runResult = execCLI('test-script --unix', { encoding: 'utf8' });
@@ -72,7 +72,7 @@ describe('Version Selection Features', () => {
     });
 
     it('should run cross-platform version with --cross-platform flag', () => {
-      const addResult = execCLI(`add test-script "${scriptFile}"`, { encoding: 'utf8' });
+      const addResult = execCLI(`add test-script "${scriptFile}" --convert`, { encoding: 'utf8' });
       expect(addResult).toContain('Added script "test-script"');
 
       const runResult = execCLI('test-script --cross-platform', { encoding: 'utf8' });
@@ -122,7 +122,7 @@ describe('Version Selection Features', () => {
       const simpleScript = join(tempDir, 'simple.py');
       writeFileSync(simpleScript, 'print("Simple Python")');
       
-      const addResult = execCLI(`add simple-script "${simpleScript}"`, { encoding: 'utf8' });
+      const addResult = execCLI(`add simple-script "${simpleScript}" --convert`, { encoding: 'utf8' });
       expect(addResult).toContain('Added script "simple-script"');
 
       const runResult = execCLI('simple-script --unix', { encoding: 'utf8' });
