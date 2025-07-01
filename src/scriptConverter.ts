@@ -90,18 +90,21 @@ export class AdvancedScriptConverter {
       .replace(/whoami/g, '$env:USERNAME')
       .replace(/pwd/g, 'Get-Location')
       
-      // Control flow - convert && and || to PowerShell equivalents
-      .replace(/\s+&&\s+/g, '; if ($?) { ')
-      .replace(/\s+\|\|\s+/g, ' } else { ')
-      
       // Path separators
       .replace(/\//g, '\\\\')
       
-      // Add proper PowerShell ending braces for control flow
-      .replace(/$/g, (match, offset, string) => {
-        const openBraces = (string.substring(0, offset).match(/if \(\$\?\) \{/g) || []).length;
-        const closeBraces = (string.substring(0, offset).match(/\}/g) || []).length;
-        return ' '.repeat(Math.max(0, openBraces - closeBraces)) + '}';
+      // Control flow - handle complex patterns first, then simple ones
+      .replace(/(.+?)\s+&&\s+(.+?)\s+\|\|\s+(.+)/g, (match, first, second, third) => {
+        // Handle: cmd1 && cmd2 || cmd3
+        return `${first.trim()}; if ($?) { ${second.trim()} } else { ${third.trim()} }`;
+      })
+      .replace(/(.+?)\s+&&\s+(.+)/g, (match, first, second) => {
+        // Handle: cmd1 && cmd2
+        return `${first.trim()}; if ($?) { ${second.trim()} }`;
+      })
+      .replace(/(.+?)\s+\|\|\s+(.+)/g, (match, first, second) => {
+        // Handle: cmd1 || cmd2
+        return `${first.trim()}; if (-not $?) { ${second.trim()} }`;
       });
   }
 
