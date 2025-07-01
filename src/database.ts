@@ -325,6 +325,23 @@ export class ScaffoldDatabase {
     });
   }
 
+  async clearAllCommands(): Promise<number> {
+    await this.initPromise;
+    
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        'DELETE FROM commands',
+        function(err) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(this.changes);
+          }
+        }
+      );
+    });
+  }
+
   async getCommand(name: string): Promise<ScaffoldCommand | null> {
     await this.initPromise;
     

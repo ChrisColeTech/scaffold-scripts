@@ -50,10 +50,17 @@ program.configureOutput({
 });
 
 // Main scaffolding commands
-program.argument('[script-name]', 'run script with specified name').action(async (scriptName) => {
+program
+  .argument('[script-name]', 'run script with specified name')
+  .option('--original', 'run the original script version')
+  .option('--converted', 'run the converted script version')
+  .option('--windows', 'run the Windows-specific script version')
+  .option('--unix', 'run the Unix-specific script version')
+  .option('--cross-platform', 'run the cross-platform script version')
+  .action(async (scriptName, options) => {
   try {
     if (scriptName) {
-      await handleScriptCommand(scriptName, false)
+      await handleScriptCommand(scriptName, false, options)
     } else {
       // Interactive mode when no script name provided
       const selectedScript = await selectScriptInteractively()
@@ -70,6 +77,11 @@ program.argument('[script-name]', 'run script with specified name').action(async
 
       if (selectedScript === 'add') {
         UsageHelper.displayCommandHelp('add');
+        return
+      }
+
+      if (selectedScript === 'clear') {
+        await clearAllCommands()
         return
       }
 
@@ -144,6 +156,36 @@ program
       await removeCommand(name)
     } catch (error: any) {
       UsageHelper.displayError(error.message, 'Check that the script name is correct');
+      process.exit(1)
+    }
+  })
+
+// Clear all command
+program
+  .command('clear')
+  .description('clear all scripts from database')
+  .option('-y, --yes', 'skip confirmation prompt')
+  .on('--help', () => {
+    console.log('')
+    console.log('Examples:')
+    console.log('  $ scripts clear        # Clear all scripts with confirmation')
+    console.log('  $ scripts clear -y     # Clear all scripts without confirmation')
+  })
+  .action(async (options) => {
+    try {
+      if (options.yes) {
+        // Skip confirmation and clear directly
+        const deletedCount = await db.clearAllCommands()
+        if (deletedCount > 0) {
+          console.log(chalk.green(`${sym.check()} Successfully cleared ${deletedCount} script(s) from the database.`))
+        } else {
+          console.log(chalk.blue(`${sym.info()} No scripts were found to clear.`))
+        }
+      } else {
+        await clearAllCommands()
+      }
+    } catch (error: any) {
+      UsageHelper.displayError(error.message, 'Unable to clear scripts');
       process.exit(1)
     }
   })
@@ -251,6 +293,11 @@ async function selectScriptInteractively(): Promise<string | null> {
       value: 'add',
       description: 'Get help adding a new script',
     },
+    {
+      title: `${sym.warning()} Clear all scripts`,
+      value: 'clear',
+      description: 'Remove all scripts from the database',
+    },
     { title: `${sym.cross()} Exit`, value: 'exit', description: 'Exit interactive mode' },
   )
 
@@ -271,8 +318,36 @@ async function selectScriptInteractively(): Promise<string | null> {
   }
 }
 
+// Clear all commands
+async function clearAllCommands() {
+  console.log(chalk.yellow(`${sym.warning()} This will permanently delete ALL scripts from your database.`))
+  
+  const confirmation = await prompts({
+    type: 'confirm',
+    name: 'proceed',
+    message: 'Are you sure you want to clear all scripts?',
+    initial: false
+  })
+
+  if (!confirmation.proceed) {
+    console.log(chalk.blue('Operation cancelled.'))
+    return
+  }
+
+  try {
+    const deletedCount = await db.clearAllCommands()
+    if (deletedCount > 0) {
+      console.log(chalk.green(`${sym.check()} Successfully cleared ${deletedCount} script(s) from the database.`))
+    } else {
+      console.log(chalk.blue(`${sym.info()} No scripts were found to clear.`))
+    }
+  } catch (error: any) {
+    console.error(chalk.red(`${sym.cross()} Error clearing scripts: ${error.message}`))
+  }
+}
+
 // Handle script commands
-async function handleScriptCommand(scriptName: string, viewOnly: boolean = false) {
+async function handleScriptCommand(scriptName: string, viewOnly: boolean = false, versionOptions?: any) {
   // Try to find by name first, then by alias
   let command = await db.getCommand(scriptName)
   if (!command) {
@@ -294,11 +369,52 @@ async function handleScriptCommand(scriptName: string, viewOnly: boolean = false
       console.log(chalk.gray(command.description))
     }
 
-    // For interpreter-based scripts (PowerShell, Node.js, Python), always use the original script
-    let scriptToExecute = processor.getBestScript(command)
-    if (['powershell', 'nodejs', 'python'].includes(command.script_type)) {
-      scriptToExecute = command.script_original
+    // Determine which script version to execute based on flags
+    let scriptToExecute = command.script_original; // default to original
+    let versionUsed = 'original';
+
+    if (versionOptions) {
+      if (versionOptions.original) {
+        scriptToExecute = command.script_original;
+        versionUsed = 'original';
+      } else if (versionOptions.converted) {
+        scriptToExecute = processor.getBestScript(command);
+        versionUsed = 'converted';
+      } else if (versionOptions.windows && command.script_windows) {
+        scriptToExecute = command.script_windows;
+        versionUsed = 'Windows';
+      } else if (versionOptions.unix && command.script_unix) {
+        scriptToExecute = command.script_unix;
+        versionUsed = 'Unix';
+      } else if (versionOptions.crossPlatform && command.script_cross_platform) {
+        scriptToExecute = command.script_cross_platform;
+        versionUsed = 'cross-platform';
+      } else if (versionOptions.windows && !command.script_windows) {
+        console.log(chalk.yellow(`${sym.warning()} Windows version not available, using original`));
+        scriptToExecute = command.script_original;
+        versionUsed = 'original (Windows not available)';
+      } else if (versionOptions.unix && !command.script_unix) {
+        console.log(chalk.yellow(`${sym.warning()} Unix version not available, using original`));
+        scriptToExecute = command.script_original;
+        versionUsed = 'original (Unix not available)';
+      } else if (versionOptions.crossPlatform && !command.script_cross_platform) {
+        console.log(chalk.yellow(`${sym.warning()} Cross-platform version not available, using original`));
+        scriptToExecute = command.script_original;
+        versionUsed = 'original (cross-platform not available)';
+      }
+    } else {
+      // Default behavior - auto-select best version
+      if (['powershell', 'nodejs', 'python'].includes(command.script_type)) {
+        scriptToExecute = command.script_original;
+        versionUsed = 'original (interpreter-based)';
+      } else {
+        scriptToExecute = processor.getBestScript(command);
+        versionUsed = 'auto-selected';
+      }
     }
+
+    console.log(chalk.gray(`Using ${versionUsed} version`));
+    
     const result = await executor.executeScript(scriptToExecute, command.platform, [], command.script_type)
     console.log(chalk.green(`\n${sym.check()} Script completed successfully!`))
     
