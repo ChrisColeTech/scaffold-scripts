@@ -1,2 +1,0 @@
-echo "Plain text script"
-# Testing .txt extension - treated as shell by default
