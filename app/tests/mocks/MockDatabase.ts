@@ -8,6 +8,16 @@
  */
 
 class MockDatabase {
+  filename: string | undefined;
+  mode: number;
+  isOpen: boolean;
+  inTransactionState: boolean;
+  tables: Map<string, Map<number, any>>;
+  lastInsertRowid: number;
+  changes: number;
+  serialized: boolean;
+  statements: Map<string, any>;
+
   constructor(filename?: string, mode?: any, callback?: (err: Error | null) => void) {
     // Handle different argument patterns
     if (typeof mode === 'function') {
@@ -32,7 +42,7 @@ class MockDatabase {
   }
 
   // Simulate database.run() method
-  run(sql, params, callback) {
+  run(sql: string, params?: any[] | ((err: Error | null) => void), callback?: (err: Error | null) => void) {
     try {
       const result = this._executeSql(sql, params)
       if (callback) {
@@ -328,7 +338,12 @@ class MockDatabase {
 
 // Mock Statement class for prepared statements
 class MockStatement {
-  constructor(database, sql) {
+  database: MockDatabase;
+  sql: string;
+  boundParams: any[];
+  finalized: boolean;
+
+  constructor(database: MockDatabase, sql: string) {
     this.database = database
     this.sql = sql
     this.boundParams = []

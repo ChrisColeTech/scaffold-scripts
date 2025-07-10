@@ -6,8 +6,8 @@
  * @see TESTING_STRATEGY.md for testing guidelines and patterns
  */
 
-import { MockDatabase } from '../../mocks/MockDatabase.js'
-import { MockScriptRepository } from '../../mocks/MockScriptRepository.js'
+import { MockDatabase } from '../../mocks/MockDatabase'
+import { MockScriptRepository } from '../../mocks/MockScriptRepository'
 
 describe('AddCommand Integration', () => {
   let mockDb: MockDatabase
