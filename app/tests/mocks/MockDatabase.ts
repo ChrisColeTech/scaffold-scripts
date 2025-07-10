@@ -44,47 +44,56 @@ class MockDatabase {
   // Simulate database.run() method
   run(sql: string, params?: any[] | ((err: Error | null) => void), callback?: (err: Error | null) => void) {
     try {
-      const result = this._executeSql(sql, params)
-      if (callback) {
-        process.nextTick(() => callback.call({ lastID: this.lastInsertRowid, changes: result.changes }, null))
+      const actualParams = typeof params === 'function' ? [] : params || []
+      const actualCallback = typeof params === 'function' ? params : callback
+      const result = this._executeSql(sql, actualParams)
+      if (actualCallback) {
+        process.nextTick(() => actualCallback.call({ lastID: this.lastInsertRowid, changes: result.changes }, null))
       }
       return this
     } catch (error) {
-      if (callback) {
-        process.nextTick(() => callback(error))
+      const actualCallback = typeof params === 'function' ? params : callback
+      if (actualCallback) {
+        process.nextTick(() => actualCallback(error as Error))
       }
       return this
     }
   }
 
   // Simulate database.get() method
-  get(sql, params, callback) {
+  get(sql: string, params?: any[] | ((err: Error | null, row?: any) => void), callback?: (err: Error | null, row?: any) => void) {
     try {
-      const result = this._executeSql(sql, params)
+      const actualParams = typeof params === 'function' ? [] : params || []
+      const actualCallback = typeof params === 'function' ? params : callback
+      const result = this._executeSql(sql, actualParams)
       const row = result.rows && result.rows.length > 0 ? result.rows[0] : undefined
-      if (callback) {
-        process.nextTick(() => callback(null, row))
+      if (actualCallback) {
+        process.nextTick(() => actualCallback(null, row))
       }
       return this
     } catch (error) {
-      if (callback) {
-        process.nextTick(() => callback(error))
+      const actualCallback = typeof params === 'function' ? params : callback
+      if (actualCallback) {
+        process.nextTick(() => actualCallback(error as Error))
       }
       return this
     }
   }
 
   // Simulate database.all() method
-  all(sql, params, callback) {
+  all(sql: string, params?: any[] | ((err: Error | null, rows?: any[]) => void), callback?: (err: Error | null, rows?: any[]) => void) {
     try {
-      const result = this._executeSql(sql, params)
-      if (callback) {
-        process.nextTick(() => callback(null, result.rows || []))
+      const actualParams = typeof params === 'function' ? [] : params || []
+      const actualCallback = typeof params === 'function' ? params : callback
+      const result = this._executeSql(sql, actualParams)
+      if (actualCallback) {
+        process.nextTick(() => actualCallback(null, result.rows || []))
       }
       return this
     } catch (error) {
-      if (callback) {
-        process.nextTick(() => callback(error))
+      const actualCallback = typeof params === 'function' ? params : callback
+      if (actualCallback) {
+        process.nextTick(() => actualCallback(error as Error))
       }
       return this
     }
@@ -101,11 +110,11 @@ class MockDatabase {
   }
 
   // Simulate database.each() method
-  each(sql, params, rowCallback, completeCallback) {
+  each(sql: string, params?: any[] | ((err: Error | null, row?: any) => void), rowCallback?: (err: Error | null, row?: any) => void, completeCallback?: (err: Error | null, count?: number) => void) {
     // Handle different argument patterns
     if (typeof params === 'function') {
-      completeCallback = rowCallback
-      rowCallback = params
+      completeCallback = rowCallback as (err: Error | null, count?: number) => void
+      rowCallback = params as (err: Error | null, row?: any) => void
       params = []
     }
     
@@ -136,16 +145,16 @@ class MockDatabase {
       processNext()
     } catch (error) {
       if (rowCallback) {
-        process.nextTick(() => rowCallback(error))
+        process.nextTick(() => rowCallback(error as Error))
       }
     }
     return this
   }
 
   // Simulate database.exec() method
-  exec(sql, callback) {
+  exec(sql: string, callback?: (err: Error | null) => void) {
     try {
-      const statements = sql.split(';').filter(s => s.trim())
+      const statements = sql.split(';').filter((s: string) => s.trim())
       for (const statement of statements) {
         if (statement.trim()) {
           this._executeSql(statement.trim(), [])
@@ -156,17 +165,17 @@ class MockDatabase {
       }
     } catch (error) {
       if (callback) {
-        process.nextTick(() => callback(error))
+        process.nextTick(() => callback(error as Error))
       }
     }
     return this
   }
 
   // Simulate database.prepare() method
-  prepare(sql, params, callback) {
+  prepare(sql: string, params?: any[] | ((err: Error | null, stmt?: MockStatement) => void), callback?: (err: Error | null, stmt?: MockStatement) => void) {
     // Handle different argument patterns
     if (typeof params === 'function') {
-      callback = params
+      callback = params as (err: Error | null, stmt?: MockStatement) => void
       params = []
     }
     
@@ -188,7 +197,7 @@ class MockDatabase {
   }
 
   // Simulate database.serialize() method
-  serialize(callback) {
+  serialize(callback?: () => void) {
     this.serialized = true
     if (callback) {
       callback()
@@ -197,7 +206,7 @@ class MockDatabase {
   }
 
   // Simulate database.parallelize() method
-  parallelize(callback) {
+  parallelize(callback?: () => void) {
     this.serialized = false
     if (callback) {
       callback()
@@ -233,15 +242,15 @@ class MockDatabase {
   }
 
   // Error simulation for testing
-  _simulateError(message) {
-    const error = new Error(message)
+  _simulateError(message: string) {
+    const error = new Error(message) as any
     error.errno = 1
     error.code = 'SQLITE_ERROR'
     return error
   }
 
   // Internal SQL execution simulation
-  _executeSql(sql, params = []) {
+  _executeSql(sql: string, params: any[] = []) {
     const normalizedSql = sql.trim().toLowerCase()
     
     // Handle CREATE TABLE
@@ -307,30 +316,30 @@ class MockDatabase {
     return { changes: 0, rows: [] }
   }
 
-  _extractTableName(sql) {
+  _extractTableName(sql: string) {
     const match = sql.match(/(?:from|into|table|update)\s+([\w_]+)/i)
     return match ? match[1] : 'unknown'
   }
 
-  _createRowFromInsert(sql, params, id) {
+  _createRowFromInsert(sql: string, params: any[], id: number) {
     // Simple row creation - in real tests, this would be more sophisticated
     return { id, name: params[0] || 'test', content: params[1] || 'test content', created_at: new Date().toISOString() }
   }
 
-  _filterRows(rows, sql, params) {
+  _filterRows(rows: any[], sql: string, params: any[]) {
     // Simple filtering - in real tests, this would parse WHERE clauses
     if (sql.includes('WHERE') && params.length > 0) {
-      return rows.filter(row => row.name === params[0])
+      return rows.filter((row: any) => row.name === params[0])
     }
     return rows
   }
 
-  _matchesWhere(row, sql, params) {
+  _matchesWhere(row: any, sql: string, params: any[]) {
     // Simple WHERE matching - would be more sophisticated in real implementation
     return params.length === 0 || row.name === params[0]
   }
 
-  _updateRow(row, sql, params) {
+  _updateRow(row: any, sql: string, params: any[]) {
     // Simple update - would parse SET clauses in real implementation
     return { ...row, content: params[0] || row.content }
   }
@@ -351,7 +360,7 @@ class MockStatement {
   }
 
   // Bind parameters to the statement
-  bind(...params) {
+  bind(...params: any[]) {
     if (this.finalized) {
       throw new Error('Statement has been finalized')
     }
@@ -368,14 +377,14 @@ class MockStatement {
       }
     } catch (error) {
       if (callback) {
-        process.nextTick(() => callback(error))
+        process.nextTick(() => callback(error as Error))
       }
     }
     return this
   }
 
   // Reset the statement
-  reset(callback) {
+  reset(callback?: (err: Error | null) => void) {
     if (this.finalized) {
       throw new Error('Statement has been finalized')
     }
@@ -387,14 +396,14 @@ class MockStatement {
       }
     } catch (error) {
       if (callback) {
-        process.nextTick(() => callback(error))
+        process.nextTick(() => callback(error as Error))
       }
     }
     return this
   }
 
   // Finalize the statement
-  finalize(callback) {
+  finalize(callback?: (err: Error | null) => void) {
     if (!this.finalized) {
       this.finalized = true
       this.boundParams = []
@@ -406,7 +415,7 @@ class MockStatement {
   }
 
   // Execute statement (like database.run)
-  run(...params) {
+  run(...params: any[]) {
     if (this.finalized) {
       throw new Error('Statement has been finalized')
     }
@@ -419,7 +428,7 @@ class MockStatement {
     const allParams = params.length > 0 ? params : this.boundParams
     
     try {
-      const result = this.database._executeSql(this.sql, allParams)
+      const result = this.database._executeSql(this.sql, allParams || [])
       if (callback) {
         process.nextTick(() => callback.call({ 
           lastID: this.database.lastInsertRowid, 
@@ -428,14 +437,14 @@ class MockStatement {
       }
     } catch (error) {
       if (callback) {
-        process.nextTick(() => callback(error))
+        process.nextTick(() => callback(error as Error))
       }
     }
     return this
   }
 
   // Get single row (like database.get)
-  get(...params) {
+  get(...params: any[]) {
     if (this.finalized) {
       throw new Error('Statement has been finalized')
     }
@@ -448,21 +457,21 @@ class MockStatement {
     const allParams = params.length > 0 ? params : this.boundParams
     
     try {
-      const result = this.database._executeSql(this.sql, allParams)
+      const result = this.database._executeSql(this.sql, allParams || [])
       const row = result.rows && result.rows.length > 0 ? result.rows[0] : undefined
       if (callback) {
         process.nextTick(() => callback(null, row))
       }
     } catch (error) {
       if (callback) {
-        process.nextTick(() => callback(error))
+        process.nextTick(() => callback(error as Error))
       }
     }
     return this
   }
 
   // Get all rows (like database.all)
-  all(...params) {
+  all(...params: any[]) {
     if (this.finalized) {
       throw new Error('Statement has been finalized')
     }
@@ -475,13 +484,13 @@ class MockStatement {
     const allParams = params.length > 0 ? params : this.boundParams
     
     try {
-      const result = this.database._executeSql(this.sql, allParams)
+      const result = this.database._executeSql(this.sql, allParams || [])
       if (callback) {
         process.nextTick(() => callback(null, result.rows || []))
       }
     } catch (error) {
       if (callback) {
-        process.nextTick(() => callback(error))
+        process.nextTick(() => callback(error as Error))
       }
     }
     return this
