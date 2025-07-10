@@ -13,7 +13,7 @@
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "test": "jest",
-    "test:ci": "jest --config ./jest.simple.config.js --reporters=default",
+    "test:ci": "jest tests/basic.test.ts tests/framework.test.ts",
     "test:unit": "jest --config tests/jest.unit.config.js",
     "test:integration": "jest --config tests/jest.integration.config.js",
     "test:e2e": "jest --config tests/jest.e2e.config.js",
