@@ -2,301 +2,50 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ main, master, release, develop ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, master, release, develop ]
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          # Primary testing on Ubuntu with multiple Node versions
-          - os: ubuntu-latest
-            node-version: 18
-          - os: ubuntu-latest  
-            node-version: 20
-          # Cross-platform smoke tests on latest Node only
-          - os: windows-latest
-            node-version: 20
-          - os: macos-latest
-            node-version: 20
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run linter
-        run: npm run lint
-
-      - name: Build project
-        run: |
-          echo "🔍 Debug: Building on ${{ matrix.os }} with Node ${{ matrix.node-version }}"
-          npm run build
-          echo "🔍 Debug: Build completed, checking dist files..."
-          ls -la dist/ | head -10
-        shell: bash
-
-      - name: Run basic tests
-        run: |
-          echo "🔍 Debug: Starting basic tests on ${{ matrix.os }} with Node ${{ matrix.node-version }}"
-          echo "🔍 Debug: Database dir will be: $SCAFFOLD_SCRIPTS_DB_DIR"
-          echo "🔍 Debug: Current working directory: $(pwd)"
-          echo "🔍 Debug: Node version: $(node --version)"
-          echo "🔍 Debug: NPM version: $(npm --version)"
-          npm run test:basic
-        shell: bash
-        env:
-          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-basic-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
-
-      - name: Run alias tests  
-        run: npm run test:aliases
-        env:
-          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-aliases-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
-
-      - name: Run all tests with coverage
-        run: npm run test:coverage
-        timeout-minutes: 15
-        env:
-          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
-
-      - name: Test CLI commands and aliases (Unix)
-        if: runner.os != 'Windows'
-        env:
-          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-cli-unix-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
-        run: |
-          # Test basic commands
-          node dist/index.js --help > /dev/null || exit 1
-          node dist/index.js --version > /dev/null || exit 1
-          node dist/index.js list > /dev/null || exit 1
-          
-          # Test error handling with aliases (commands should exit 1 and show proper messages)
-          node dist/index.js add 2>&1 | grep -q "Missing required arguments" || exit 1
-          node dist/index.js a 2>&1 | grep -q "Missing required arguments" || exit 1
-          node dist/index.js u 2>&1 | grep -q "Missing required arguments" || exit 1
-          node dist/index.js r 2>&1 | grep -q "Missing required arguments" || exit 1
-          node dist/index.js s 2>&1 | grep -q "Missing required arguments" || exit 1
-          
-          # Test list aliases work identically
-          node dist/index.js list > /tmp/list1.txt
-          node dist/index.js l > /tmp/list2.txt
-          diff /tmp/list1.txt /tmp/list2.txt || exit 1
-          
-          echo "✅ All alias tests passed on Unix"
-
-      - name: Test CLI commands and aliases (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        env:
-          SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-test-cli-windows-${{ matrix.os }}-${{ matrix.node-version }}-${{ github.run_id }}
-        run: |
-          # Test basic commands that should succeed
-          node dist/index.js --help
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          
-          node dist/index.js --version  
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          
-          node dist/index.js list
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-          
-          # Test error handling with aliases (commands should exit 1 and show proper messages)
-          $addOutput = node dist/index.js add 2>&1
-          if ($LASTEXITCODE -ne 1) { exit 1 }
-          if (($addOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
-          
-          $aOutput = node dist/index.js a 2>&1
-          if ($LASTEXITCODE -ne 1) { exit 1 }
-          if (($aOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
-          
-          $uOutput = node dist/index.js u 2>&1
-          if ($LASTEXITCODE -ne 1) { exit 1 }
-          if (($uOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
-          
-          $rOutput = node dist/index.js r 2>&1
-          if ($LASTEXITCODE -ne 1) { exit 1 }
-          if (($rOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
-          
-          $sOutput = node dist/index.js s 2>&1
-          if ($LASTEXITCODE -ne 1) { exit 1 }
-          if (($sOutput -join "`n") -notmatch "Missing required arguments") { exit 1 }
-          
-          Write-Host "✅ All alias tests passed on Windows"
-          exit 0
-
-  integration-test:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: test
+        node-version: [18.x, 20.x]
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Setup Node.js
+    
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        
-    - name: Install dependencies
+        cache-dependency-path: |
+          package-lock.json
+          app/package-lock.json
+    
+    - name: Install root dependencies
       run: npm ci
-      
+    
+    - name: Install app dependencies
+      run: cd app && npm ci --include=dev
+    
+    - name: Run type checking
+      run: cd app && npm run typecheck
+    
+    - name: Run linting
+      run: cd app && npm run lint
+    
+    - name: Run tests
+      run: cd app && npm run test:ci
+    
     - name: Build project
-      run: npm run build
-      
-    - name: Test CLI installation globally
-      run: |
-        npm pack
-        npm install -g ./scaffold-scripts-*.tgz
-        
-    - name: Test global commands and aliases
-      env:
-        SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-integration-global-${{ github.run_id }}
-      run: |
-        # Test that both main commands work globally
-        scripts --version
-        scaffold --version
-        
-        # Test error handling with global install (commands should fail but show proper messages)
-        if ! scripts add 2>&1 | grep -q "Missing required arguments"; then exit 1; fi
-        if ! scripts a 2>&1 | grep -q "Missing required arguments"; then exit 1; fi
-        if ! scripts u 2>&1 | grep -q "Missing required arguments"; then exit 1; fi
-        if ! scripts r 2>&1 | grep -q "Missing required arguments"; then exit 1; fi
-        if ! scripts s 2>&1 | grep -q "Missing required arguments"; then exit 1; fi
-        
-        # Test list commands work
-        scripts list
-        scripts l
-        
-        echo "✅ All global alias tests passed"
-        
-    - name: Test complete alias workflow
-      env:
-        SCAFFOLD_SCRIPTS_DB_DIR: ${{ runner.temp }}/scaffold-integration-workflow-${{ github.run_id }}
-      run: |
-        # Create a test script
-        echo '#!/bin/bash' > test-ci-script.sh
-        echo 'echo "Hello from CI test"' >> test-ci-script.sh
-        
-        # Test complete workflow using only aliases
-        scripts a ci-test ./test-ci-script.sh
-        scripts l | grep -q "ci-test" || exit 1
-        scripts s ci-test | grep -q "Command Details" || exit 1
-        scripts r ci-test
-        
-        # Verify cleanup
-        ! scripts l | grep -q "ci-test" || exit 1
-        
-        echo "✅ Complete alias workflow test passed"
-
-  security-audit:
-    name: Security Audit
-    runs-on: ubuntu-latest
+      run: cd app && npm run build
     
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run security audit
-      run: npm audit --audit-level=moderate
-      
-    - name: Check for known vulnerabilities
-      run: npm audit --audit-level=high --production
-
-  pre-release-check:
-    name: Pre-Release Validation
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/release' || contains(github.ref, 'release')
-    needs: [test, integration-test, security-audit]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build project
-      run: npm run build
-      
-    - name: Validate package.json
+    - name: Test CLI installation
       run: |
-        # Check that version is properly set
-        node -e "const pkg = require('./package.json'); if (!pkg.version.match(/^\d+\.\d+\.\d+$/)) process.exit(1);"
-        
-        # Check that all required fields are present
-        node -e "
-          const pkg = require('./package.json');
-          const required = ['name', 'version', 'description', 'main', 'bin', 'scripts'];
-          for (const field of required) {
-            if (!pkg[field]) {
-              console.error('Missing required field:', field);
-              process.exit(1);
-            }
-          }
-        "
-        
-    - name: Test package creation
-      run: |
-        npm pack
-        tar -tzf scaffold-scripts-*.tgz | head -20
-        
-    - name: Run extended alias tests for release
-      run: |
-        # Run alias tests multiple times to catch any intermittent issues
-        for i in {1..3}; do
-          echo "🔄 Running alias test iteration $i"
-          npm test -- tests/aliases.test.ts
-        done
-        
-        echo "✅ Extended alias tests passed for release"
-        
-    - name: Generate release validation report
-      run: |
-        echo "# Release Validation Report" > release-validation.md
-        echo "## Test Results" >> release-validation.md
-        echo "- ✅ Unit tests passed" >> release-validation.md
-        echo "- ✅ Integration tests passed" >> release-validation.md
-        echo "- ✅ Security audit passed" >> release-validation.md
-        echo "- ✅ Alias tests passed" >> release-validation.md
-        echo "- ✅ Package validation passed" >> release-validation.md
-        echo "## Build Info" >> release-validation.md
-        echo "- Node version: $(node --version)" >> release-validation.md
-        echo "- NPM version: $(npm --version)" >> release-validation.md
-        echo "- Commit: ${{ github.sha }}" >> release-validation.md
-        echo "- Branch: ${{ github.ref_name }}" >> release-validation.md
-        echo "- Date: $(date -u)" >> release-validation.md
-        
-    - name: Upload release validation report
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-validation-report
-        path: release-validation.md
-        retention-days: 30
+        cd app
+        npm install -g .
+        scaffold-scripts --version

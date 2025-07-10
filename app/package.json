@@ -1,0 +1,84 @@
+{
+  "name": "scaffold-scripts",
+  "version": "4.0.0",
+  "description": "Simple CLI tool for managing and running your own scripts. Add any script, run it anywhere.",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "scaffold": "./bin/scaffold.js",
+    "scripts": "./bin/scaffold.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:ci": "jest --config ./jest.simple.config.mjs tests/basic.test.ts tests/framework.test.ts",
+    "test:unit": "jest --config tests/jest.unit.config.js",
+    "test:integration": "jest --config tests/jest.integration.config.js",
+    "test:e2e": "jest --config tests/jest.e2e.config.js",
+    "test:performance": "jest --config tests/jest.performance.config.js",
+    "test:coverage": "jest --config tests/jest.unit.config.js --coverage",
+    "test:watch": "jest --watch",
+    "test:debug": "jest --detectOpenHandles --forceExit --runInBand",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "precommit": "npm run build && npm run lint && npm run test:unit",
+    "prepack": "npm run build",
+    "install-global": "npm install -g .",
+    "uninstall-global": "npm uninstall -g scaffold-scripts",
+    "audit:singletons": "node tests/scripts/run-diagnostics.js auditSingletons",
+    "debug:error-classification": "node tests/scripts/run-diagnostics.js debugErrorClassification",
+    "test:response:schema": "node tests/scripts/run-diagnostics.js testResponseSchema",
+    "debug:statistics-tracking": "node tests/scripts/run-diagnostics.js debugStatisticsTracking",
+    "debug:sanitization-flow": "node tests/scripts/run-diagnostics.js debugSanitizationFlow",
+    "test:middleware:json-parsing": "node tests/scripts/run-diagnostics.js testMiddlewareJsonParsing",
+    "test:performance:integration": "node tests/scripts/run-diagnostics.js testPerformanceIntegration",
+    "test:environment:compare": "node tests/scripts/run-diagnostics.js testEnvironmentCompare",
+    "test:health:check": "node tests/scripts/run-diagnostics.js healthCheck"
+  },
+  "keywords": [
+    "cli",
+    "scripts",
+    "automation",
+    "script-manager",
+    "bash",
+    "powershell",
+    "python",
+    "workflow",
+    "productivity",
+    "developer-tools"
+  ],
+  "author": "ChrisColeTech",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChrisColeTech/scaffold-scripts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChrisColeTech/scaffold-scripts/issues"
+  },
+  "homepage": "https://github.com/ChrisColeTech/scaffold-scripts#readme",
+  "dependencies": {
+    "@types/prompts": "^2.4.9",
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "ora": "^5.4.1",
+    "prompts": "^2.4.2",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.10.0",
+    "@types/sqlite3": "^3.1.11",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

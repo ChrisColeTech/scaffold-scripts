@@ -1,35 +1,50 @@
-## Description
+# Pull Request
 
-Brief description of what this PR does.
+## Summary
+Brief description of the changes in this PR.
 
 ## Type of Change
-
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
+- [ ] Refactoring (no functional changes)
 - [ ] Performance improvement
-- [ ] Code refactoring
+- [ ] Test improvements
+
+## Changes Made
+- [ ] List specific changes made
+- [ ] Include any new files created
+- [ ] Note any files deleted or moved
 
 ## Testing
+- [ ] All unit tests pass (`npm run test:unit`)
+- [ ] All integration tests pass (`npm run test:integration`)
+- [ ] All E2E tests pass (`npm run test:e2e`)
+- [ ] Manual testing completed
+- [ ] Added new tests for new functionality
 
-- [ ] Tests pass locally with my changes
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] I have tested on multiple platforms (if applicable)
+## Code Quality
+- [ ] TypeScript compilation passes (`npm run build`)
+- [ ] Linting passes (`npm run lint`)
+- [ ] Pre-commit validation passes (`npm run precommit`)
+- [ ] Code follows project conventions
+- [ ] No console.log statements left in code
 
-## Checklist
+## Documentation
+- [ ] README updated (if needed)
+- [ ] API documentation updated (if needed)
+- [ ] Inline code comments added for complex logic
+- [ ] Type definitions updated (if needed)
 
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] Any dependent changes have been merged and published
-
-## Screenshots (if applicable)
-
-Add screenshots to help explain your changes.
+## Breaking Changes
+If this is a breaking change, describe what breaks and how to migrate:
 
 ## Additional Notes
+Any additional information that reviewers should know.
 
-Add any other context about the pull request here.
+## Checklist
+- [ ] Self-review completed
+- [ ] Requested reviews from appropriate team members
+- [ ] Linked to relevant issues
+- [ ] Verified all CI checks pass
