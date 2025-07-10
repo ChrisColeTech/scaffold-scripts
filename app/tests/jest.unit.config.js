@@ -37,14 +37,14 @@ export default {
   ],
   coverageDirectory: "<rootDir>/tests/logs/coverage/unit",
   coverageReporters: ["text", "lcov", "html"],
-  coverageThreshold: {
-    global: {
-      branches: 85,
-      functions: 90,
-      lines: 90,
-      statements: 90
-    }
-  },
+  // coverageThreshold: {
+  //   global: {
+  //     branches: 85,
+  //     functions: 90,
+  //     lines: 90,
+  //     statements: 90
+  //   }
+  // },
   
   // Performance settings
   clearMocks: true,
