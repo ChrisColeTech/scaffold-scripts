@@ -5,8 +5,6 @@
  * for the module components.
  */
 
-// TODO: Add exports as components are implemented
-// Example: export { ComponentName } from './ComponentName.js'
-
-// Placeholder to prevent empty file issues
-export {};
+export { MockDatabase, MockStatement, Database, Statement } from './MockDatabase'
+export { MockScriptRepository } from './MockScriptRepository'
+export { MockSystemCapabilities } from './MockSystemCapabilities'

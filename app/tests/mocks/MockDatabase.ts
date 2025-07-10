@@ -190,7 +190,7 @@ class MockDatabase {
       return statement
     } catch (error) {
       if (callback) {
-        process.nextTick(() => callback(error))
+        process.nextTick(() => callback(error as Error))
       }
       return null
     }
