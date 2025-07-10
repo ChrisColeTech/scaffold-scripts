@@ -1,0 +1,195 @@
+name: Publish to NPM
+
+on:
+  push:
+    branches: [release]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (patch, minor, major, or specific version like 1.2.3)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Install dependencies
+      run: |
+        cd app
+        npm ci
+        
+    - name: Run tests
+      run: |
+        cd app
+        npm run test:ci
+        
+    - name: Build project
+      run: |
+        cd app
+        npm run build
+        
+    - name: Bump version (release branch or manual trigger)
+      if: github.ref == 'refs/heads/release' || github.event_name == 'workflow_dispatch'
+      run: |
+        cd app
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # Manual trigger - use specified version
+          if [[ "${{ github.event.inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            TARGET_VERSION="${{ github.event.inputs.version }}"
+          else
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version --dry-run
+            TARGET_VERSION=$(node -p "require('./package.json').version")
+          fi
+        else
+          # Release branch push - calculate next patch version
+          TARGET_VERSION=$(npm version patch --no-git-tag-version --dry-run | sed 's/v//')
+        fi
+        
+        # Check if version already exists on NPM
+        if npm view scaffold-scripts@$TARGET_VERSION version >/dev/null 2>&1; then
+          echo "Version $TARGET_VERSION already published to NPM, skipping version bump"
+          exit 0
+        fi
+        
+        # Check if git tag already exists
+        if git tag -l | grep -q "^v$TARGET_VERSION$"; then
+          echo "Tag v$TARGET_VERSION already exists, skipping version bump"
+          exit 0
+        fi
+        
+        # Safe to bump version
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ "${{ github.event.inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          else
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          fi
+        else
+          npm version patch --no-git-tag-version
+        fi
+        
+        git add package.json package-lock.json
+        git commit -m "Bump version to $(node -p "require('./package.json').version")" || true
+        git push || true
+
+    - name: Create Git tag (release branch or manual trigger)
+      if: github.ref == 'refs/heads/release' || github.event_name == 'workflow_dispatch'
+      run: |
+        cd app
+        VERSION=$(node -p "require('./package.json').version")
+        
+        # Check if tag already exists
+        if git tag -l | grep -q "^v$VERSION$"; then
+          echo "Tag v$VERSION already exists, skipping tag creation"
+          exit 0
+        fi
+        
+        git tag -a "v$VERSION" -m "Release v$VERSION"
+        git push origin "v$VERSION"
+        
+    - name: Publish to NPM
+      run: |
+        cd app
+        VERSION=$(node -p "require('./package.json').version")
+        
+        # Check if version already exists on NPM
+        if npm view scaffold-scripts@$VERSION version >/dev/null 2>&1; then
+          echo "Version $VERSION already published to NPM, skipping publish"
+          exit 0
+        fi
+        
+        npm publish --provenance --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Sync to main branch (release branch only)
+      if: github.ref == 'refs/heads/release'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Fetch and checkout main
+        git fetch origin main
+        git checkout main
+        
+        # Merge from release (allow non-fast-forward)
+        git merge origin/release --no-edit -m "Sync from release branch"
+        
+        # Push to main
+        git push origin main
+        
+        echo "✅ Successfully synced release to main branch"
+        
+    - name: Create GitHub Release (release branch or manual trigger)
+      if: github.ref == 'refs/heads/release' || github.event_name == 'workflow_dispatch'
+      run: |
+        cd app
+        VERSION=$(node -p "require('./package.json').version")
+        
+        # Check if release already exists
+        if gh release view "v$VERSION" >/dev/null 2>&1; then
+          echo "Release v$VERSION already exists, skipping release creation"
+          exit 0
+        fi
+        
+        # Generate release notes from recent commits
+        RELEASE_NOTES=$(git log --pretty=format:"- %s" --since="24 hours ago" --grep="^(?!Merge)" | head -10 | sed '/^$/d' || echo "- Bug fixes and improvements")
+        
+        # Create release with dynamic notes
+        gh release create "v$VERSION" \
+          --title "Release v$VERSION" \
+          --notes "## What's New
+        
+        $RELEASE_NOTES
+        
+        ## Installation
+        \`\`\`bash
+        npm install -g scaffold-scripts@$VERSION
+        \`\`\`
+        
+        ## Quick Start
+        \`\`\`bash
+        # Generate new project
+        scaffold-scripts create my-project
+        
+        # Run tests
+        npm test
+        
+        # Build project
+        npm run build
+        \`\`\`
+        
+        ## More Info
+        - [Documentation](https://github.com/ChrisColeTech/scaffold-scripts#readme)
+        - [Release Process](https://github.com/ChrisColeTech/scaffold-scripts/blob/main/docs/RELEASE_PROCESS.md)"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
