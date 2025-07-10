@@ -284,13 +284,13 @@ class MockDatabase {
       const tableName = this._extractTableName(sql)
       const table = this.tables.get(tableName) || new Map()
       let changes = 0
-      for (const [id, row] of table.entries()) {
+      table.forEach((row, id) => {
         if (this._matchesWhere(row, sql, params)) {
           const updatedRow = this._updateRow(row, sql, params)
           table.set(id, updatedRow)
           changes++
         }
-      }
+      })
       return { changes, rows: [] }
     }
     
@@ -299,12 +299,14 @@ class MockDatabase {
       const tableName = this._extractTableName(sql)
       const table = this.tables.get(tableName) || new Map()
       let changes = 0
-      for (const [id, row] of table.entries()) {
+      const idsToDelete: any[] = []
+      table.forEach((row, id) => {
         if (this._matchesWhere(row, sql, params)) {
-          table.delete(id)
+          idsToDelete.push(id)
           changes++
         }
-      }
+      })
+      idsToDelete.forEach(id => table.delete(id))
       return { changes, rows: [] }
     }
     
